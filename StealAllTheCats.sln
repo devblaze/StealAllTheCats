@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCats", "StealAllTheCats\StealAllTheCats.csproj", "{B9215C69-CBA6-4633-A4E9-7B3D6C56E936}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{591ED1D9-A11E-49EE-8B3F-E29212BD00CD}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllCats.Tests", "StealAllCats.Tests\StealAllCats.Tests.csproj", "{A989C13C-2B27-4EFC-8A2E-0DE6C63007C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9215C69-CBA6-4633-A4E9-7B3D6C56E936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9215C69-CBA6-4633-A4E9-7B3D6C56E936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9215C69-CBA6-4633-A4E9-7B3D6C56E936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9215C69-CBA6-4633-A4E9-7B3D6C56E936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A989C13C-2B27-4EFC-8A2E-0DE6C63007C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A989C13C-2B27-4EFC-8A2E-0DE6C63007C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A989C13C-2B27-4EFC-8A2E-0DE6C63007C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A989C13C-2B27-4EFC-8A2E-0DE6C63007C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
