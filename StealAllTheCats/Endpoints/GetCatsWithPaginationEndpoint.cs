@@ -2,19 +2,21 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
+using StealAllTheCats.Models.Requets;
 
 namespace StealAllTheCats.Endpoints;
 
-public class GetCatsEndpoint(ApplicationDbContext db) : Endpoint<GetCatsRequest>
+public class GetCatsEndpoint(ApplicationDbContext db) : Endpoint<GetCatsPaginatedRequest>
 {
     public override void Configure()
     {
         Verbs(Http.GET);
         Routes("/api/cats");
         Description(sb => sb.WithSummary("Retrieve all cats with pagination and optional tag filtering"));
+        AllowAnonymous();
     }
 
-    public override async Task HandleAsync(GetCatsRequest req, CancellationToken ct)
+    public override async Task HandleAsync(GetCatsPaginatedRequest req, CancellationToken ct)
     {
         var query = db.Cats.Include(c => c.Tags).AsQueryable();
 
@@ -28,11 +30,4 @@ public class GetCatsEndpoint(ApplicationDbContext db) : Endpoint<GetCatsRequest>
 
         await SendOkAsync(new { TotalItems = total, Data = data }, ct);
     }
-}
-
-public class GetCatsRequest
-{
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
-    public string? Tag { get; set; }
 }

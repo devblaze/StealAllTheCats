@@ -1,7 +1,7 @@
-﻿using StealAllTheCats.Models;
-using FastEndpoints;
+﻿using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
+using StealAllTheCats.Models.Requets;
 
 namespace StealAllTheCats.Endpoints;
 
@@ -12,6 +12,7 @@ public class GetCatEndpoint(ApplicationDbContext db) : Endpoint<GetCatRequest>
         Verbs(Http.GET);
         Routes("/api/cats/{Id}");
         Description(sb => sb.WithSummary("Retrieve cat by ID"));
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(GetCatRequest req, CancellationToken ct)
@@ -24,9 +25,4 @@ public class GetCatEndpoint(ApplicationDbContext db) : Endpoint<GetCatRequest>
         }
         await SendOkAsync(cat, ct);
     }
-}
-
-public class GetCatRequest
-{
-    public int Id { get; set; }
 }
