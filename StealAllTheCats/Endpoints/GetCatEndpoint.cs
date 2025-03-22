@@ -5,12 +5,8 @@ using StealAllTheCats.Data;
 
 namespace StealAllTheCats.Endpoints;
 
-public class GetCatEndpoint : Endpoint<GetCatRequest>
+public class GetCatEndpoint(ApplicationDbContext db) : Endpoint<GetCatRequest>
 {
-    private readonly ApplicationDbContext _db;
-
-    public GetCatEndpoint(ApplicationDbContext db) => _db = db;
-
     public override void Configure()
     {
         Verbs(Http.GET);
@@ -20,7 +16,7 @@ public class GetCatEndpoint : Endpoint<GetCatRequest>
 
     public override async Task HandleAsync(GetCatRequest req, CancellationToken ct)
     {
-        var cat = await _db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == req.Id, ct);
+        var cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == req.Id, ct);
         if (cat is null)
         {
             await SendNotFoundAsync(ct);

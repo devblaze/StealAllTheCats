@@ -4,36 +4,28 @@ using StealAllTheCats.Services;
 
 namespace StealAllTheCats.Endpoints;
 
-public class FetchCatsEndpoint : EndpointWithoutRequest
+public class FetchCatsEndpoint(ApplicationDbContext db, ICatService catService) : EndpointWithoutRequest
 {
-    private readonly ApplicationDbContext _db;
-    private readonly CatService _catService;
-
-    public FetchCatsEndpoint(ApplicationDbContext db, CatService catService)
-    {
-        _db = db;
-        _catService = catService;
-    }
-
     public override void Configure()
     {
         Verbs(Http.POST);
         Routes("/api/cats/fetch");
         Description(sb => sb.WithSummary("Fetch 25 cat images from CaaS API and store them"));
+        AllowAnonymous(); // include only if your setup or middleware expects explicit anonymous allowance
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var newCats = await _catService.FetchCatsAsync(25);
-        var existingCatIds = _db.Cats.Select(c => c.CatId).ToHashSet();
+        var newCats = await catService.FetchCatsAsync(25);
+        var existingCatIds = db.Cats.Select(c => c.CatId).ToHashSet();
 
         foreach (var cat in newCats)
         {
             if (!existingCatIds.Contains(cat.CatId))
-                _db.Cats.Add(cat);
+                db.Cats.Add(cat);
         }
 
-        await _db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(ct);
         await SendOkAsync(new { Message = "Fetched and saved 25 cats!", Count = newCats.Count }, ct);
     }
 }
