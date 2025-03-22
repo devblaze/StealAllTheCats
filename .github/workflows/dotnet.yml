@@ -1,28 +1,46 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build application
+        run: dotnet build --no-restore
+
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal
+
+      # Add a step to publish for self-contained deployment RECOMMENDED clearly 
+      - name: Publish (self-contained executable)
+        run: dotnet publish -c Release -o ./publish --self-contained false
+
+      - name: Verify application startup without Docker
+        run: |
+          dotnet ./publish/StealAllTheCats.dll &
+          APP_PID=$!
+          sleep 10
+          if ps -p $APP_PID > /dev/null; then
+            echo "Application runs successfully without Docker ✅"
+            kill $APP_PID
+          else
+            echo "Failed to start application without Docker ❌"
+            exit 1
+          fi
