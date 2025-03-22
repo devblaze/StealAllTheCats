@@ -9,3 +9,8 @@ public class CatApiResponse
 
     public List<CatBreed> Breeds { get; set; } = new();
 }
+
+public class CatBreed
+{
+    public string? Temperament { get; set; }
+}

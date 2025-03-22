@@ -9,8 +9,6 @@
   </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FastEndpoints" Version="5.35.0" />
-        <PackageReference Include="FastEndpoints.Swagger" Version="5.35.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.14" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.14">
@@ -28,7 +26,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Controllers\" />
       <Folder Include="Data\" />
+      <Folder Include="Models\Results\" />
     </ItemGroup>
 
 </Project>

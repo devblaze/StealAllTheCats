@@ -1,57 +1,66 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Moq;
+﻿using Moq;
 using StealAllTheCats.Data;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Responses;
 using StealAllTheCats.Services;
+using Microsoft.EntityFrameworkCore;
+using StealAllTheCats.Services.Interfaces;
 using Xunit;
 
 namespace StealAllTheCats.Tests.Services;
 
 public class CatServiceTests
 {
-    [Fact]
-    public async Task FetchCatsAsync_ShouldReturnCorrectNumberOfCats()
+    private readonly Mock<IApiClient> _mockApiClient;
+    private readonly ApplicationDbContext _dbContext;
+    private readonly ICatService _catService;
+
+    public CatServiceTests()
     {
-        var mockApiClient = new Mock<ICatApiClient>();
+        _mockApiClient = new Mock<IApiClient>();
+        var dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase("CatServiceTestsDb")
+            .Options;
+        _dbContext = new ApplicationDbContext(dbContextOptions);
 
-        mockApiClient.Setup(x => x.GetCatsAsync(It.IsAny<int>()))
-            .ReturnsAsync([
-                new CatApiResponse
-                {
-                    Id = "abc123",
-                    Url = "https://caturl.com/img1.jpg",
-                    Width = 500,
-                    Height = 500,
-                    Breeds = [new CatBreed { Temperament = "Playful, Curious" }]
-                },
+        _catService = new CatService(_mockApiClient.Object, _dbContext);
+    }
 
-                new CatApiResponse
-                {
-                    Id = "def456",
-                    Url = "https://caturl.com/img2.jpg",
-                    Width = 600,
-                    Height = 400,
-                    Breeds = [new CatBreed { Temperament = "Friendly, Loyal" }]
-                }
-            ]);
+    [Fact]
+    public async Task FetchCatsAsync_ShouldSaveApiCatsToDatabase()
+    {
+        // Arrange
+        var catsApiResponse = new List<CatApiResponse>
+        {
+            new()
+            {
+                Id = "cat123", Url = "http://test.com/cat1.jpg", Width = 500, Height = 400,
+                Breeds = [new CatBreed { Temperament = "Calm, Loving" }]
+            },
+            new()
+            {
+                Id = "cat456", Url = "http://test.com/cat2.jpg", Width = 600, Height = 300,
+                Breeds = [new CatBreed { Temperament = "Playful, Active" }]
+            }
+        };
 
-        mockApiClient.Setup(x => x.GetCatImageAsync(It.IsAny<string>()))
-            .ReturnsAsync([42]);
+        _mockApiClient.Setup(api => api.GetCatsAsync(It.IsAny<int>()))
+            .ReturnsAsync(catsApiResponse);
 
-        var context = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
+        _mockApiClient.Setup(api => api.GetCatImageAsync(It.IsAny<string>()))
+            .ReturnsAsync([0x20, 0x21]);
 
-        var service = new CatService(mockApiClient.Object, context.Object);
+        // Act
+        var results = await _catService.FetchCatsAsync();
 
-        var results = await service.FetchCatsAsync(2);
-
+        // Assert
         Assert.NotNull(results);
         Assert.Equal(2, results.Count);
-        Assert.Collection(results,
-            first => Assert.Equal("abc123", first.CatId),
-            second => Assert.Equal("def456", second.CatId));
+        Assert.Equal(2, await _dbContext.Cats.CountAsync());
 
-        mockApiClient.Verify(x => x.GetCatsAsync(2), Times.Once);
-        mockApiClient.Verify(x => x.GetCatImageAsync(It.IsAny<string>()), Times.Exactly(2));
+        var storedCats = await _dbContext.Cats.Include(c => c.Tags).ToListAsync();
+        Assert.True(storedCats.All(cat => cat.Image.Length == 2));
+        Assert.Contains(storedCats, cat => cat.CatId == "cat123");
+        Assert.Contains(storedCats, cat => cat.CatId == "cat456");
     }
 }
