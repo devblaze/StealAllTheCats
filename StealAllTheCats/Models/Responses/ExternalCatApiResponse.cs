@@ -1,6 +1,6 @@
 ﻿namespace StealAllTheCats.Models.Responses;
 
-public class CatApiResponse
+public class ExternalCatApiResponse
 {
     public string Id { get; set; } = "";
     public string Url { get; set; } = "";

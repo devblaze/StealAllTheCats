@@ -30,10 +30,10 @@ public class CatServiceTests
     public async Task FetchCatsAsync_ShouldAddCatsToDb()
     {
         // Arrange
-        _apiClientMock.Setup(x => x.GetAsync<List<CatApiResponse>>(It.IsAny<string>()))
-            .ReturnsAsync(new List<CatApiResponse>
+        _apiClientMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
+            .ReturnsAsync(new List<ExternalCatApiResponse>
             {
-                new CatApiResponse
+                new ExternalCatApiResponse
                 {
                     Id = "api-cat-1",
                     Width = 300,

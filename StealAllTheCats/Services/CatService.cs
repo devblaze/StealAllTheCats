@@ -3,6 +3,7 @@ using StealAllTheCats.Data;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
 using StealAllTheCats.Models.Responses;
+using StealAllTheCats.Models.Results;
 using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
@@ -57,7 +58,7 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
         return cats;
     }
     
-    public async Task<CatPaginatedResponse> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
+    public async Task<CatPaginatedResult> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -70,7 +71,7 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
         
         cancellationToken.ThrowIfCancellationRequested();
         
-        var response = new CatPaginatedResponse();
+        var response = new CatPaginatedResult();
         
         response.TotalItems = await query.CountAsync(cancellationToken);
         response.Data = await query.Skip((request.Page - 1) * request.PageSize)
@@ -80,17 +81,17 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
         return response;
     }
 
-    public async Task<CatEntity?> GetCatByIdAsync(GetCatsRequest request, CancellationToken cancellationToken)
+    public async Task<CatEntity?> GetCatByIdAsync(int id, CancellationToken cancellationToken)
     {
-        CatEntity? cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+        CatEntity? cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         return cat;
     }
     
-    private async Task<List<CatApiResponse>> GetCatsAsync(int limit)
+    private async Task<List<ExternalCatApiResponse>> GetCatsAsync(int limit)
     {
         var endpoint = $"images/search?limit={limit}&has_breeds=1&api_key=YOUR_API_KEY_HERE";
-        var result = await apiClient.GetAsync<List<CatApiResponse>>(endpoint);
-        return result ?? new List<CatApiResponse>();
+        var result = await apiClient.GetAsync<List<ExternalCatApiResponse>>(endpoint);
+        return result ?? new List<ExternalCatApiResponse>();
     }
 
     private async Task<byte[]> GetCatImageAsync(string url)
