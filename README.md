@@ -20,7 +20,7 @@ dotnet --version
 ### 1. Clone the Repository:
 Begin by cloning your repo:
 ``` bash
-git clone <your-repo-url>
+git clone https://github.com/devblaze/StealAllTheCats.git
 cd StealAllTheCats
 ```
 ### 2. Starting Local Development Environment using Docker Compose:
@@ -76,14 +76,20 @@ docker compose logs -f
 📦 StealAllTheCats
  ├── 📁 Controllers/            # Web API Controllers
  ├── 📁 Data/                   # Contains DB context, migrations
+ ├── 📁 Dtos/                   # Contains Data Transfer Objects
+ ├── 📁 Migrations/             # Database migration files
  ├── 📁 Models/                 # Database/entities classes
  ├── 📁 Services/               # Business logic services implementation
  ├── 📁 Properties/             # Launch profiles, etc.
- ├── 🐋 Dockerfile             # Dockerfile for building/running the app clearly
- ├── 📜 Program.cs             # Application entrypoint
- ├── 📜 appsettings.json       # Environment settings (DB connections, etc.)
- ├── 📦 compose.yaml           # Docker-compose file for container orchestration
- └── 📦 StealAllTheCats.csproj # Project definition
+ ├── 🐋 Dockerfile              # Dockerfile for building/running the app clearly
+ ├── 📜 Program.cs              # Application entrypoint
+ ├── 📜 appsettings.json        # Environment settings (DB connections, etc.)
+ ├── 📦 compose.yaml            # Docker-compose file for container orchestration
+ └── 📦 StealAllTheCats.csproj  # Project definition
+ 📦 StealAllTheCats.Tests
+ ├── 📁 Controllers/            # Contains Tests for the CatController
+ └── 📁 Services/               # Contains Tests for the CatService
+
 ```
 ## 🌟 Recommended IDE Configuration and Tools (optional but recommended):
 - **JetBrains Rider**:

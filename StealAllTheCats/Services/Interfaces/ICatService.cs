@@ -1,15 +1,15 @@
-﻿using StealAllTheCats.Models;
+﻿using StealAllTheCats.Dtos;
+using StealAllTheCats.Dtos.Results;
+using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
-using StealAllTheCats.Models.Responses;
-using StealAllTheCats.Models.Results;
 
 namespace StealAllTheCats.Services.Interfaces;
 
 public interface ICatService
 {
-    Task<List<CatEntity>> FetchCatsAsync(int limit = 25);
+    Task<Result<FetchCatsResult>> FetchCatsAsync(int limit = 25);
 
-    Task<CatPaginatedResult> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken);
+    Task<Result<CatPaginatedResult>> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken);
 
-    Task<CatEntity?> GetCatByIdAsync(int id, CancellationToken cancellationToken);
+    Task<Result<CatEntity?>> GetCatByIdAsync(int id, CancellationToken cancellationToken);
 }

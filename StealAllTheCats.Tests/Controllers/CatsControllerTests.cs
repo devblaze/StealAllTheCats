@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StealAllTheCats.Controllers;
+using StealAllTheCats.Dtos;
+using StealAllTheCats.Dtos.Results;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
 using StealAllTheCats.Services.Interfaces;
@@ -24,7 +26,7 @@ public class CatsControllerTests
     {
         // Arrange
         _serviceMock.Setup(svc => svc.GetCatByIdAsync(99, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CatEntity)null);
+            .ReturnsAsync((Result<CatEntity>)null);
 
         // Act
         var result = await _controller.GetCat(99, CancellationToken.None);
@@ -39,14 +41,16 @@ public class CatsControllerTests
         // Arrange
         var mockedCat = new CatEntity() { Id = 1, CatId = "cat-123", Width = 200, Height = 200 };
         _serviceMock.Setup(svc => svc.GetCatByIdAsync(1, CancellationToken.None))
-            .ReturnsAsync(mockedCat);
+            .ReturnsAsync(Result<CatEntity?>.Ok(mockedCat));
 
         // Act
         var result = await _controller.GetCat(1, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var cat = Assert.IsType<CatEntity>(okResult.Value);
+        var resultData = Assert.IsType<Result<CatEntity?>>(okResult.Value);
+        Assert.NotNull(resultData.Data);
+        var cat = resultData.Data;
         Assert.Equal("cat-123", cat.CatId);
     }
 
@@ -59,14 +63,20 @@ public class CatsControllerTests
             new CatEntity { Id = 2, CatId = "cat-456", Width = 300, Height = 200 }
         };
         _serviceMock.Setup(service => service.FetchCatsAsync(It.IsAny<int>()))
-            .ReturnsAsync(mockedCatsList);
+            .ReturnsAsync(Result<FetchCatsResult>.Ok(new FetchCatsResult
+            {
+                NewCatsCount = mockedCatsList.Count,
+                DuplicateCatsCount = 0,
+                Cats = mockedCatsList
+            }));
 
         // Act
         var result = await _controller.FetchCats(CancellationToken.None, 2);
 
         // Assert
         var okObjectResult = Assert.IsType<OkObjectResult>(result);
-        var cats = Assert.IsAssignableFrom<IEnumerable<CatEntity>>(okObjectResult.Value);
+        var resultData = Assert.IsType<FetchCatsResult>(okObjectResult.Value);
+        var cats = resultData.Cats;
         Assert.Equal(2, cats.Count());
     }
 }

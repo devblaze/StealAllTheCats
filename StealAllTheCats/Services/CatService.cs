@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
+using StealAllTheCats.Dtos;
+using StealAllTheCats.Dtos.Responses;
+using StealAllTheCats.Dtos.Results;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
-using StealAllTheCats.Models.Responses;
-using StealAllTheCats.Models.Results;
 using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
@@ -11,54 +12,83 @@ namespace StealAllTheCats.Services;
 
 public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatService
 {
-    public async Task<List<CatEntity>> FetchCatsAsync(int limit = 25)
+    public async Task<Result<FetchCatsResult>> FetchCatsAsync(int limit = 25)
     {
-        var apiResults = await GetCatsAsync(limit);
-        var cats = new List<CatEntity>();
-        
+        var apiCatResults = await GetCatsAsync(limit);
+        if (!apiCatResults.Success || apiCatResults.Data is null)
+            return Result<FetchCatsResult>.Fail(apiCatResults.ErrorMessage ??
+                                                "Failed fetching cats from external API.");
+
+        var existingCatIds = (await db.Cats.Select(c => c.CatId).ToListAsync()).ToHashSet();
         var existingTagsDict = await db.Tags.ToDictionaryAsync(t => t.Name, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var result in apiResults)
-        {
-            var imageData = await GetCatImageAsync(result.Url);
+        var newCats = new List<CatEntity>();
+        int duplicateCount = 0;
 
-            var tags = result.Breeds?
-                .SelectMany(b => (b.Temperament ?? "")
+        foreach (var apiCat in apiCatResults.Data)
+        {
+            if (existingCatIds.Contains(apiCat.Id))
+            {
+                duplicateCount++;
+                continue; // Skip duplicates clearly.
+            }
+
+            var catImageResult = await GetCatImageAsync(apiCat.Url);
+            if (!catImageResult.Success || catImageResult.Data is null)
+                continue; // optionally log or handle image failures explicitly
+
+            var tags = apiCat.Breeds?
+                .SelectMany(breed => (breed.Temperament ?? "")
                     .Split(',', StringSplitOptions.RemoveEmptyEntries))
                 .Select(tag => tag.Trim())
-                .Distinct()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(tagName =>
                 {
                     if (!existingTagsDict.TryGetValue(tagName, out var tag))
                     {
                         tag = new TagEntity { Name = tagName };
-                        existingTagsDict[tagName] =
-                            tag;
+                        existingTagsDict[tagName] = tag;
                         db.Tags.Add(tag);
                     }
                     return tag;
                 })
                 .ToList() ?? [];
 
-            var cat = new CatEntity
+            newCats.Add(new CatEntity
             {
-                CatId = result.Id,
-                Width = result.Width,
-                Height = result.Height,
-                Image = imageData,
+                CatId = apiCat.Id,
+                Width = apiCat.Width,
+                Height = apiCat.Height,
+                Image = catImageResult.Data,
                 Tags = tags
-            };
-
-            cats.Add(cat);
+            });
         }
 
-        await db.Cats.AddRangeAsync(cats);
-        await db.SaveChangesAsync();
+        if (newCats.Count == 0)
+            return Result<FetchCatsResult>.Fail("No new unique cats fetched.");
 
-        return cats;
+        await db.Cats.AddRangeAsync(newCats);
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            return Result<FetchCatsResult>.Fail("Failed saving cats to the database.", ex);
+        }
+
+        var response = new FetchCatsResult
+        {
+            NewCatsCount = newCats.Count,
+            DuplicateCatsCount = duplicateCount,
+            Cats = newCats
+        };
+
+        return Result<FetchCatsResult>.Ok(response);
     }
     
-    public async Task<CatPaginatedResult> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
+    public async Task<Result<CatPaginatedResult>> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -74,27 +104,30 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
         var response = new CatPaginatedResult();
         
         response.TotalItems = await query.CountAsync(cancellationToken);
-        response.Data = await query.Skip((request.Page - 1) * request.PageSize)
+        response.Cats = await query.Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
         
-        return response;
+        return Result<CatPaginatedResult>.Ok(response);
     }
 
-    public async Task<CatEntity?> GetCatByIdAsync(int id, CancellationToken cancellationToken)
+    public async Task<Result<CatEntity?>> GetCatByIdAsync(int id, CancellationToken cancellationToken)
     {
         CatEntity? cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
-        return cat;
+        return Result<CatEntity?>.Ok(cat);
     }
     
-    private async Task<List<ExternalCatApiResponse>> GetCatsAsync(int limit)
+    private async Task<Result<List<ExternalCatApiResponse>>> GetCatsAsync(int limit)
     {
-        var endpoint = $"images/search?limit={limit}&has_breeds=1&api_key=YOUR_API_KEY_HERE";
+        var endpoint = $"images/search?limit={limit}&has_breeds=1&api_key=live_msWm636ugdrc8vgMvwksZvkuthWIsfL29ROKuQ1GGxKNNtksoi8HUdcfbo6r5QzC";
         var result = await apiClient.GetAsync<List<ExternalCatApiResponse>>(endpoint);
-        return result ?? new List<ExternalCatApiResponse>();
+
+        return result.Success
+            ? Result<List<ExternalCatApiResponse>>.Ok(result.Data ?? new List<ExternalCatApiResponse>())
+            : Result<List<ExternalCatApiResponse>>.Fail(result.ErrorMessage ?? "Failed to retrieve cats.", result.Exception);
     }
 
-    private async Task<byte[]> GetCatImageAsync(string url)
+    private async Task<Result<byte[]>> GetCatImageAsync(string url)
     {
         return await apiClient.GetByteArrayAsync(url);
     }

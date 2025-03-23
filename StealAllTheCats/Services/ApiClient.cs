@@ -1,4 +1,5 @@
-﻿using StealAllTheCats.Services.Interfaces;
+﻿using StealAllTheCats.Dtos;
+using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
 namespace StealAllTheCats.Services;
@@ -20,21 +21,34 @@ public class ApiClient : IApiClient
         };
     }
 
-    public async Task<T?> GetAsync<T>(string url)
+    public async Task<Result<T>> GetAsync<T>(string url)
     {
         try
         {
             var response = await _http.GetStringAsync(url);
-            return JsonSerializer.Deserialize<T>(response, _jsonOptions);
+            var data = JsonSerializer.Deserialize<T>(response, _jsonOptions);
+
+            if (data is null)
+                return Result<T>.Fail("Deserialization returned null.");
+
+            return Result<T>.Ok(data);
         }
-        catch
+        catch (Exception ex)
         {
-            return default;
+            return Result<T>.Fail("Error occurred during request.", ex);
         }
     }
 
-    public Task<byte[]> GetByteArrayAsync(string url)
+    public async Task<Result<byte[]>> GetByteArrayAsync(string url)
     {
-        return _http.GetByteArrayAsync(url);
+        try
+        {
+            var data = await _http.GetByteArrayAsync(url);
+            return Result<byte[]>.Ok(data);
+        }
+        catch (Exception ex)
+        {
+            return Result<byte[]>.Fail("Failed to retrieve byte array.", ex);
+        }
     }
 }

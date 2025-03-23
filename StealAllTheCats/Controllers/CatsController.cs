@@ -29,15 +29,19 @@ public class CatsController(ICatService catService) : ControllerBase
     public async Task<IActionResult> FetchCats(CancellationToken ct, int catImages = 25)
     {
         var result = await catService.FetchCatsAsync(catImages);
-        return Ok(result);
+        if (!result.Success)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, result.ErrorMessage);
+
+        return Ok(result.Data);
     }
 
     [HttpGet("{id}/image")]
     public async Task<IActionResult> GetCatImage(int id, CancellationToken ct)
     {
-        var cat = await catService.GetCatByIdAsync(id, ct);
+        var catResult = await catService.GetCatByIdAsync(id, ct);
+        var cat = catResult.Data;
 
-        if (cat == null || cat.Image == null || cat.Image.Length == 0)
+        if (!catResult.Success || cat == null || cat.Image == null || cat.Image.Length == 0)
             return NotFound("No image found.");
         
         return File(cat.Image, "image/jpeg");
