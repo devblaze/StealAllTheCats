@@ -1,4 +1,4 @@
-# 🐱 StealAllTheCats - Developer Guide
+# 🐱 StealAllTheCats
 
 [![.NET Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/dotnet.yml/badge.svg)](https://github.com/<your-github-username>/<your-repository-name>/actions/workflows/dotnet.yml)
 [![Docker Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/docker-image.yml/badge.svg)](https://github.com/<your-github-username>/<your-repository-name>/actions/workflows/docker-image.yml)

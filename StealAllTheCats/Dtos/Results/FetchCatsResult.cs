@@ -6,5 +6,5 @@ public class FetchCatsResult
 {
     public int NewCatsCount { get; set; }
     public int DuplicateCatsCount { get; set; }
-    public List<CatEntity> Cats { get; set; } = [];
+    public List<CatDto> Cats { get; set; } = [];
 }

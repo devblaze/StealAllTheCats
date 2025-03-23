@@ -35,7 +35,6 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogInformation("Attempting to migrate database. Attempt: {Attempt}/{Retries}", attempt, retries);
             
-            // ONLY THIS IS REQUIRED
             dbContext.Database.Migrate();
             
             logger.LogInformation("Database migration successful.");

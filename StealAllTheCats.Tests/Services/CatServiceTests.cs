@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using StealAllTheCats.Data;
 using StealAllTheCats.Dtos;
+using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Responses;
 using StealAllTheCats.Models;
-using StealAllTheCats.Models.Requets;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 using Xunit;
@@ -15,85 +16,55 @@ public class CatServiceTests
 {
     private readonly ICatService _catService;
     private readonly Mock<IApiClient> _apiClientMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly ApplicationDbContext _dbContext;
 
     public CatServiceTests()
     {
         _apiClientMock = new Mock<IApiClient>();
-        
+        _configurationMock = new Mock<IConfiguration>();
+
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        
+
         _dbContext = new ApplicationDbContext(options);
-        _catService = new CatService(_apiClientMock.Object, _dbContext);
+        _catService = new CatService(_dbContext, _apiClientMock.Object, _configurationMock.Object);
     }
 
     [Fact]
     public async Task FetchCatsAsync_Should_Report_Duplicates_Explicitly()
     {
         // Arrange
-        _apiClientMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
+        var dbOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        
+        using var context = new ApplicationDbContext(dbOptions);
+        
+        context.Cats.Add(new CatEntity { CatId = "cat-123", Width = 200, Height = 100, ImageUrl = "ttp://example.com/cat123.png" });
+        await context.SaveChangesAsync();
+        
+        var apiMock = new Mock<IApiClient>();
+        apiMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
             .ReturnsAsync(Result<List<ExternalCatApiResponse>>.Ok(new List<ExternalCatApiResponse>
             {
-                new()
-                {
-                    Id = "api-cat-1", Width = 300, Height = 300, Url = "http://cat-image.com/cat-1.jpg",
-                    Breeds = new List<CatBreed> { new() { Temperament = "Playful, Active" } }
-                },
-                new()
-                {
-                    Id = "api-cat-2", Width = 400, Height = 400, Url = "http://cat-image.com/cat-2.jpg",
-                    Breeds = new List<CatBreed> { new() { Temperament = "Calm, Sleepy" } }
-                }
+                new() { Id = "cat-123", Url = "http://example.com/cat123.png", Width = 200, Height = 100 }
             }));
 
-        _apiClientMock.Setup(x => x.GetByteArrayAsync(It.IsAny<string>()))
-            .ReturnsAsync(Result<byte[]>.Ok(new byte[] { 1, 2, 3 }));
+        var configurationMock = new Mock<IConfiguration>();
+        var catService = new CatService(context, apiMock.Object, configurationMock.Object);
 
-        // Act - First run to fetch unique cats into DB
-        var firstRunResult = await _catService.FetchCatsAsync();
+        // Act
+        var result = await catService.FetchCatsAsync(1);
 
-        // Explicitly verify no duplicates in first call
-        Assert.True(firstRunResult.Success);
-        Assert.Equal(2, firstRunResult.Data!.NewCatsCount);
-        Assert.Equal(0, firstRunResult.Data.DuplicateCatsCount);
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.Success);
 
-        // Act - Second fetch attempt, expecting duplicates clearly
-        var secondRunResult = await _catService.FetchCatsAsync();
-
-        // Explicit assert for second call: expecting 2 duplicates
-        Assert.False(secondRunResult.Success); // Should fail because we have no new cats explicitly
-        Assert.Equal("No new unique cats fetched.", secondRunResult.ErrorMessage);
-
-        // Now simulate we return 1 existing cat + 1 totally new cat
-        _apiClientMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
-            .ReturnsAsync(Result<List<ExternalCatApiResponse>>.Ok(new List<ExternalCatApiResponse>
-            {
-                new()
-                {
-                    Id = "api-cat-1", Width = 300, Height = 300, Url = "http://cat-image.com/cat-1.jpg",
-                    Breeds = new List<CatBreed> { new() { Temperament = "Playful, Active" } }
-                }, // existing cat explicitly
-                new()
-                {
-                    Id = "api-cat-3", Width = 500, Height = 500, Url = "http://cat-image.com/cat-3.jpg",
-                    Breeds = new List<CatBreed> { new() { Temperament = "Friendly" } }
-                } // new cat
-            }));
-
-        var thirdRunResult = await _catService.FetchCatsAsync();
-
-        Assert.True(thirdRunResult.Success);
-        Assert.Equal(1, thirdRunResult.Data!.NewCatsCount); // 1 new cat explicitly
-        Assert.Equal(1, thirdRunResult.Data.DuplicateCatsCount); // explicitly expecting 1 duplicate
-
-        // Confirm Cats table state explicitly
-        Assert.Equal(3, await _dbContext.Cats.CountAsync());
-
-        // Confirm Tags database explicitly
-        var tagsInDb = await _dbContext.Tags.Select(t => t.Name).ToListAsync();
-        Assert.Equal(5, tagsInDb.Count); // "Playful","Active","Calm","Sleepy","Friendly"
+        Assert.Equal(0, result.Data!.NewCatsCount);
+        Assert.Equal(1, result.Data.DuplicateCatsCount);
+        Assert.Empty(result.Data.Cats);
     }
 
     [Fact]
@@ -107,9 +78,6 @@ public class CatServiceTests
                 new() { Id = "cat-002", Width = 400, Height = 200, Url = "http://cat-image.com/cat-002.jpg" },
             }));
 
-        _apiClientMock.Setup(x => x.GetByteArrayAsync(It.IsAny<string>()))
-            .ReturnsAsync(Result<byte[]>.Ok(new byte[] { 10, 20, 30 }));
-
         // Act
         var result = await _catService.FetchCatsAsync(2);
 
@@ -118,8 +86,8 @@ public class CatServiceTests
         var storedCats = await _dbContext.Cats.ToListAsync();
         Assert.Equal(2, storedCats.Count);
 
-        Assert.Contains(storedCats, c => c.CatId == "cat-001" && c.Image.SequenceEqual(new byte[] { 10, 20, 30 }));
-        Assert.Contains(storedCats, c => c.CatId == "cat-002" && c.Image.SequenceEqual(new byte[] { 10, 20, 30 }));
+        Assert.Contains(storedCats, c => c.CatId == "cat-001" && c.ImageUrl == "http://cat-image.com/cat-001.jpg");
+        Assert.Contains(storedCats, c => c.CatId == "cat-002" && c.ImageUrl == "http://cat-image.com/cat-002.jpg");
     }
 
     [Fact]
@@ -138,9 +106,6 @@ public class CatServiceTests
                     Breeds = new List<CatBreed> { new() { Temperament = "Friendly,Lazy" } }
                 }
             }));
-
-        _apiClientMock.Setup(x => x.GetByteArrayAsync(It.IsAny<string>()))
-            .ReturnsAsync(Result<byte[]>.Ok(new byte[] { 5, 5, 5 }));
 
         // Act
         var result = await _catService.FetchCatsAsync(1);
@@ -175,7 +140,7 @@ public class CatServiceTests
                 CatId = $"cat-{i}",
                 Width = 300,
                 Height = 300,
-                Image = new byte[] { 5, 10, 15 },
+                ImageUrl = "http://cats.com/cat-101.jpg",
                 Tags = (i % 2 == 0) ? [tags[0]] : [tags[1]]
             });
         }

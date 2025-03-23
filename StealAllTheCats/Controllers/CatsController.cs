@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StealAllTheCats.Models.Requets;
+using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 
@@ -12,7 +12,12 @@ public class CatsController(ICatService catService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetCats([FromQuery] GetCatsRequest request, CancellationToken ct)
     {
-        return Ok(await catService.GetCatsPaginatedAsync(request, ct));
+        var result = await catService.GetCatsPaginatedAsync(request, ct);
+
+        if (!result.Success)
+            return BadRequest(result.ErrorMessage);
+
+        return Ok(result.Data);
     }
 
     [HttpGet("{id}")]
@@ -20,9 +25,10 @@ public class CatsController(ICatService catService) : ControllerBase
     {
         var result = await catService.GetCatByIdAsync(id, ct);
 
-        if (result is null) return NotFound();
+        if (!result.Success)
+            return NotFound(result.ErrorMessage);
 
-        return Ok(result);
+        return Ok(result.Data);
     }
 
     [HttpPost]
@@ -33,17 +39,5 @@ public class CatsController(ICatService catService) : ControllerBase
             return StatusCode(StatusCodes.Status503ServiceUnavailable, result.ErrorMessage);
 
         return Ok(result.Data);
-    }
-
-    [HttpGet("{id}/image")]
-    public async Task<IActionResult> GetCatImage(int id, CancellationToken ct)
-    {
-        var catResult = await catService.GetCatByIdAsync(id, ct);
-        var cat = catResult.Data;
-
-        if (!catResult.Success || cat == null || cat.Image == null || cat.Image.Length == 0)
-            return NotFound("No image found.");
-        
-        return File(cat.Image, "image/jpeg");
     }
 }

@@ -38,17 +38,4 @@ public class ApiClient : IApiClient
             return Result<T>.Fail("Error occurred during request.", ex);
         }
     }
-
-    public async Task<Result<byte[]>> GetByteArrayAsync(string url)
-    {
-        try
-        {
-            var data = await _http.GetByteArrayAsync(url);
-            return Result<byte[]>.Ok(data);
-        }
-        catch (Exception ex)
-        {
-            return Result<byte[]>.Fail("Failed to retrieve byte array.", ex);
-        }
-    }
 }
