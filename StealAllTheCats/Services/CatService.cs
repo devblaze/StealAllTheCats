@@ -14,6 +14,8 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
     {
         var apiResults = await apiClient.GetCatsAsync(limit);
         var cats = new List<CatEntity>();
+        
+        var existingTagsDict = await db.Tags.ToDictionaryAsync(t => t.Name, StringComparer.OrdinalIgnoreCase);
 
         foreach (var result in apiResults)
         {
@@ -24,8 +26,18 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
                     .Split(',', StringSplitOptions.RemoveEmptyEntries))
                 .Select(tag => tag.Trim())
                 .Distinct()
-                .Select(t => new TagEntity { Name = t })
-                .ToList() ?? new List<TagEntity>();
+                .Select(tagName =>
+                {
+                    if (!existingTagsDict.TryGetValue(tagName, out var tag))
+                    {
+                        tag = new TagEntity { Name = tagName };
+                        existingTagsDict[tagName] =
+                            tag;
+                        db.Tags.Add(tag);
+                    }
+                    return tag;
+                })
+                .ToList() ?? [];
 
             var cat = new CatEntity
             {
