@@ -12,14 +12,14 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
 {
     public async Task<List<CatEntity>> FetchCatsAsync(int limit = 25)
     {
-        var apiResults = await apiClient.GetCatsAsync(limit);
+        var apiResults = await GetCatsAsync(limit);
         var cats = new List<CatEntity>();
         
         var existingTagsDict = await db.Tags.ToDictionaryAsync(t => t.Name, StringComparer.OrdinalIgnoreCase);
 
         foreach (var result in apiResults)
         {
-            var imageData = await apiClient.GetCatImageAsync(result.Url);
+            var imageData = await GetCatImageAsync(result.Url);
 
             var tags = result.Breeds?
                 .SelectMany(b => (b.Temperament ?? "")
@@ -84,5 +84,17 @@ public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatSer
     {
         CatEntity? cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
         return cat;
+    }
+    
+    private async Task<List<CatApiResponse>> GetCatsAsync(int limit)
+    {
+        var endpoint = $"images/search?limit={limit}&has_breeds=1&api_key=YOUR_API_KEY_HERE";
+        var result = await apiClient.GetAsync<List<CatApiResponse>>(endpoint);
+        return result ?? new List<CatApiResponse>();
+    }
+
+    private async Task<byte[]> GetCatImageAsync(string url)
+    {
+        return await apiClient.GetByteArrayAsync(url);
     }
 }

@@ -1,5 +1,4 @@
-﻿using StealAllTheCats.Models.Responses;
-using StealAllTheCats.Services.Interfaces;
+﻿using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
 namespace StealAllTheCats.Services;
@@ -7,32 +6,34 @@ namespace StealAllTheCats.Services;
 public class ApiClient : IApiClient
 {
     private readonly HttpClient _http;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public ApiClient(HttpClient httpClient)
     {
         _http = httpClient;
         _http.BaseAddress = new Uri("https://api.thecatapi.com/v1/");
+
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+        };
     }
 
-    // generic
-    public async Task<List<CatApiResponse>> GetCatsAsync(int limit)
+    public async Task<T?> GetAsync<T>(string url)
     {
-        string response;
-        
         try
         {
-            response = await _http.GetStringAsync($"images/search?limit={limit}&has_breeds=1&api_key=live_msWm636ugdrc8vgMvwksZvkuthWIsfL29ROKuQ1GGxKNNtksoi8HUdcfbo6r5QzC");
+            var response = await _http.GetStringAsync(url);
+            return JsonSerializer.Deserialize<T>(response, _jsonOptions);
         }
-        catch (Exception e)
+        catch
         {
-            return new(); // result pattern
+            return default;
         }
-        
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles };
-        return JsonSerializer.Deserialize<List<CatApiResponse>>(response, options) ?? [];
     }
-    
-    public Task<byte[]> GetCatImageAsync(string url)
+
+    public Task<byte[]> GetByteArrayAsync(string url)
     {
         return _http.GetByteArrayAsync(url);
     }
