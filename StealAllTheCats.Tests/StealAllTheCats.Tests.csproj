@@ -27,8 +27,4 @@
       <ProjectReference Include="..\StealAllTheCats\StealAllTheCats.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services\CatServicesTests\Fixtures\" />
-    </ItemGroup>
-
 </Project>

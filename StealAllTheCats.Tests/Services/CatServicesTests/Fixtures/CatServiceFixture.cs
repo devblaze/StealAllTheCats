@@ -5,7 +5,7 @@ using StealAllTheCats.Database.Repositories.Interfaces;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 
-namespace StealAllTheCats.Tests.Services.CatServicesTests;
+namespace StealAllTheCats.Tests.Services.CatServicesTests.Fixtures;
 
 public class CatServiceFixture
 {

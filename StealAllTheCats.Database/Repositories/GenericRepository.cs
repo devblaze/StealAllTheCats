@@ -10,9 +10,14 @@ public class GenericRepository<TEntity>(ApplicationDbContext context) : IGeneric
     protected readonly ApplicationDbContext Context = context;
     protected readonly DbSet<TEntity> Entities = context.Set<TEntity>();
 
-    public async Task<TEntity?> GetByIdAsync(int id)
+    public async Task<TEntity?> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes)
     {
-        return await Entities.FindAsync(id);
+        IQueryable<TEntity> query = Entities;
+
+        foreach (var include in includes)
+            query = query.Include(include);
+
+        return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
     }
 
     public async Task<IReadOnlyList<TEntity>> GetAllAsync()
@@ -23,17 +28,23 @@ public class GenericRepository<TEntity>(ApplicationDbContext context) : IGeneric
     public async Task<(IReadOnlyList<TEntity> Items, int TotalCount)> GetPaginatedAsync(
         int skip,
         int take,
-        Expression<Func<TEntity, bool>>? filter = null)
+        Expression<Func<TEntity, bool>>? filter = null,
+        params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = Entities;
 
         if (filter != null)
-        {
             query = query.Where(filter);
-        }
+
+        foreach (var include in includes)
+            query = query.Include(include);
 
         int totalCount = await query.CountAsync();
-        List<TEntity> items = await query.Skip(skip).Take(take).ToListAsync();
+        List<TEntity> items = await query
+            .Skip(skip)
+            .Take(take)
+            .AsNoTracking()
+            .ToListAsync();
 
         return (items, totalCount);
     }
