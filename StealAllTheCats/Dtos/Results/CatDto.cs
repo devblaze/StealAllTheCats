@@ -1,4 +1,4 @@
-﻿namespace StealAllTheCats.Dtos;
+﻿namespace StealAllTheCats.Dtos.Results;
 
 public class CatDto
 {

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
+using StealAllTheCats.Repositories;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 
@@ -12,14 +13,18 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<ICatRepository, CatRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+
 builder.Services.AddHttpClient<IApiClient, ApiClient>();
 builder.Services.AddScoped<ICatService, CatService>();
 
 var app = builder.Build();
 
-// =======================
+// =================================
 // Migrate Automatically at Startup
-// =======================
+// =================================
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

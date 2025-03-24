@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
 using StealAllTheCats.Dtos;
-using StealAllTheCats.Dtos.Mapper;
+using StealAllTheCats.Dtos.Mappers;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Responses;
 using StealAllTheCats.Dtos.Results;

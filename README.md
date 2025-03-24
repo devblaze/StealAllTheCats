@@ -37,10 +37,12 @@ Docker Compose will:
 ### 3. Running Application (direct URLs):
 Open your browser or API testing tool to access:
 
-| Application URLs | Environment |
-| --- | --- |
-| [http://localhost:8080/swagger](http://localhost:8080/swagger) | Swagger (API Docs Local Development) |
-| [http://localhost:8081](http://localhost:8081) | Alternative Port / Custom usage |
+| Application URLs                                               | Environment                           |
+|----------------------------------------------------------------|---------------------------------------|
+| [Docker Swagger](http://localhost:8080/swagger/index.html)     | Swagger (API Docs Local Development)  |
+| [.NET https Launch](https://localhost:7284/swagger/index.html) | Swagger (API Docs Local Development)  |
+| [.NET http Launch](http://localhost:5221/swagger/index.html)   | Swagger (API Docs Local Development)  |                                      |
+
 ## 🖥 Developing Locally Without Docker:
 You can optionally build and run without Docker directly from your IDE or CLI:
 - Open solution (`StealAllTheCats.sln`) in Rider/Visual Studio.
@@ -118,15 +120,6 @@ docker compose down -v
 docker compose build
 docker compose up
 ```
-_⚠️ NOTE_: `down -v` **drops your data** clear entirely.
-## ✍️ Contributing Clearly Encouraged:
-- Fork repository clearly, create a branch clearly, implement clearly, open Pull requests clearly.
-- All contributions are welcome explicitly and clearly!
-
-## 🚨 Support & Questions:
-- Please report any unclear problems directly clearly via repository issues section.
-- Include explicit details (logs, docker output, clear screenshot) for faster clear responses.
 
 ## 📝 License:
-_(Clearly specify your chosen license here, e.g., MIT License)_
-You're now clearly set for easy local and Docker-based `.NET 8.0` ASP.NET Core development! 🚀🐈🧑‍💻
+This project is licensed under the MIT License - see the LICENSE file for details.
