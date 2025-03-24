@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using StealAllTheCats.Data;
-using StealAllTheCats.Repositories;
-using StealAllTheCats.Repositories.Interfaces;
+using StealAllTheCats.Database;
+using StealAllTheCats.Database.Repositories;
+using StealAllTheCats.Database.Repositories.Interfaces;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 

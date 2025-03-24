@@ -1,12 +1,13 @@
 ﻿using StealAllTheCats.Common;
 using StealAllTheCats.Common.Dtos;
+using StealAllTheCats.Database;
+using StealAllTheCats.Database.Models;
+using StealAllTheCats.Database.Repositories.Interfaces;
 using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Mappers;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Responses;
 using StealAllTheCats.Dtos.Results;
-using StealAllTheCats.Models;
-using StealAllTheCats.Repositories.Interfaces;
 using StealAllTheCats.Services.Interfaces;
 using System.Linq.Expressions;
 

@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using StealAllTheCats.Data;
+using StealAllTheCats.Database;
+using StealAllTheCats.Database.Models;
 using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Responses;
-using StealAllTheCats.Models;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 using Xunit;

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using StealAllTheCats.Data;
+using StealAllTheCats.Database;
 
 #nullable disable
 
-namespace StealAllTheCats.Migrations
+namespace StealAllTheCats.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -37,7 +37,7 @@ namespace StealAllTheCats.Migrations
                     b.ToTable("CatEntityTagEntity");
                 });
 
-            modelBuilder.Entity("StealAllTheCats.Models.CatEntity", b =>
+            modelBuilder.Entity("StealAllTheCats.Database.Models.CatEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,9 +55,9 @@ namespace StealAllTheCats.Migrations
                     b.Property<int>("Height")
                         .HasColumnType("int");
 
-                    b.Property<byte[]>("Image")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Width")
                         .HasColumnType("int");
@@ -67,7 +67,7 @@ namespace StealAllTheCats.Migrations
                     b.ToTable("Cats");
                 });
 
-            modelBuilder.Entity("StealAllTheCats.Models.TagEntity", b =>
+            modelBuilder.Entity("StealAllTheCats.Database.Models.TagEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -89,13 +89,13 @@ namespace StealAllTheCats.Migrations
 
             modelBuilder.Entity("CatEntityTagEntity", b =>
                 {
-                    b.HasOne("StealAllTheCats.Models.CatEntity", null)
+                    b.HasOne("StealAllTheCats.Database.Models.CatEntity", null)
                         .WithMany()
                         .HasForeignKey("CatsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StealAllTheCats.Models.TagEntity", null)
+                    b.HasOne("StealAllTheCats.Database.Models.TagEntity", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)

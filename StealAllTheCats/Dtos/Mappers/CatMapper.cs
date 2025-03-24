@@ -1,5 +1,5 @@
-﻿using StealAllTheCats.Dtos.Results;
-using StealAllTheCats.Models;
+﻿using StealAllTheCats.Database.Models;
+using StealAllTheCats.Dtos.Results;
 
 namespace StealAllTheCats.Dtos.Mappers;
 

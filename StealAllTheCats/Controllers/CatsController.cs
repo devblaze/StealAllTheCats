@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Services.Interfaces;
 
@@ -12,11 +13,8 @@ public class CatsController(ICatService catService) : ControllerBase
     public async Task<IActionResult> GetCats([FromQuery] GetCatsRequest request, CancellationToken ct)
     {
         var result = await catService.GetCatsPaginatedAsync(request, ct);
-
-        if (!result.Success)
-            return BadRequest(result.ErrorMessage);
-
-        return Ok(result.Data);
+        
+        return GetResult(result);
     }
 
     [HttpGet("{id}")]
@@ -24,19 +22,23 @@ public class CatsController(ICatService catService) : ControllerBase
     {
         var result = await catService.GetCatByIdAsync(id, ct);
 
-        if (!result.Success)
-            return NotFound(result.ErrorMessage);
-
-        return Ok(result.Data);
+        return GetResult(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> FetchCats(CancellationToken ct, int catImages = 25)
     {
         var result = await catService.FetchCatsAsync(catImages);
+        
+        return GetResult(result);
+    }
+
+    private IActionResult GetResult<T>(Result<T> result)
+    {
         if (!result.Success)
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, result.ErrorMessage);
+            return StatusCode(result.ErrorCode, result.ErrorMessage!);
 
         return Ok(result.Data);
     }
+    
 }

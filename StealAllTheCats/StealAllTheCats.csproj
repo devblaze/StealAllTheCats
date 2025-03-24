@@ -27,11 +27,11 @@
 
     <ItemGroup>
       <Folder Include="Controllers\" />
-      <Folder Include="Data\" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\StealAllTheCats.Common\StealAllTheCats.Common.csproj" />
+      <ProjectReference Include="..\StealAllTheCats.Database\StealAllTheCats.Database.csproj" />
     </ItemGroup>
 
 </Project>

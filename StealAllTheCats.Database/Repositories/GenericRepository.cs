@@ -1,10 +1,8 @@
-﻿using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using StealAllTheCats.Data;
-using StealAllTheCats.Repositories.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using StealAllTheCats.Database.Repositories.Interfaces;
+using System.Linq.Expressions;
 
-namespace StealAllTheCats.Repositories;
+namespace StealAllTheCats.Database.Repositories;
 
 public class GenericRepository<TEntity>(ApplicationDbContext context) : IGenericRepository<TEntity>
     where TEntity : class

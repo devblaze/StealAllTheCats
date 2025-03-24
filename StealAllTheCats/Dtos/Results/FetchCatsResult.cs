@@ -1,6 +1,4 @@
-﻿using StealAllTheCats.Models;
-
-namespace StealAllTheCats.Dtos.Results;
+﻿namespace StealAllTheCats.Dtos.Results;
 
 public class FetchCatsResult
 {

@@ -1,4 +1,4 @@
-﻿namespace StealAllTheCats.Models;
+﻿namespace StealAllTheCats.Database.Models;
 
 public class CatEntity
 {
