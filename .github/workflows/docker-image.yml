@@ -1,18 +1,38 @@
-name: Docker image
+name: Docker Image CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
-  build:
+  build-test-docker:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - uses: actions/checkout@v4
+
+      # Build Docker image explicitly
+      - name: Build Docker image
+        run: docker build -t steal-all-the-cats:${{ github.sha }} -f StealAllTheCats/Dockerfile .
+
+      # Run Docker container explicitly
+      - name: Start container explicitly to verify startup
+        run: docker run -d --name catapp_test -p 8080:8080 steal-all-the-cats:${{ github.sha }}
+
+      # Verify explicitly if Docker app starts clearly (adjust port if needed)
+      - name: Wait and verify container availability
+        run: |
+          sleep 10
+          if [ "$(docker ps -q -f name=catapp_test)" ]; then
+            echo "Container started successfully ✅"
+          else
+            echo "Container failed to start ❌"
+            docker logs catapp_test
+            exit 1
+          fi
+          
+      - name: Stop Docker container explicitly
+        run: docker stop catapp_test && docker rm catapp_test
