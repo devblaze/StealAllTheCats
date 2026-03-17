@@ -1,6 +1,5 @@
 ﻿using StealAllTheCats.Common;
 using StealAllTheCats.Common.Dtos;
-using StealAllTheCats.Database;
 using StealAllTheCats.Database.Models;
 using StealAllTheCats.Database.Repositories.Interfaces;
 using StealAllTheCats.Dtos;

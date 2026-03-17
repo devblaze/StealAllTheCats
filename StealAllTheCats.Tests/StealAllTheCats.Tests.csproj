@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
+      <Folder Include="Services\CatServicesTests\Fixtures\" />
     </ItemGroup>
 
 </Project>
