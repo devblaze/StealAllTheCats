@@ -6,7 +6,7 @@ public class CatEntity
     public string CatId { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
-    public byte[] Image { get; set; } = null!;
+    public string ImageUrl { get; set; } = "";
     public DateTime Created { get; set; } = DateTime.UtcNow;
     public ICollection<TagEntity>? Tags { get; set; } = new List<TagEntity>();
 }
