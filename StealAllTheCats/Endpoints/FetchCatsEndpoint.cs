@@ -11,7 +11,7 @@ public class FetchCatsEndpoint(ApplicationDbContext db, ICatService catService) 
         Verbs(Http.POST);
         Routes("/api/cats/fetch");
         Description(sb => sb.WithSummary("Fetch 25 cat images from CaaS API and store them"));
-        AllowAnonymous(); // include only if your setup or middleware expects explicit anonymous allowance
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

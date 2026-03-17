@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
 using StealAllTheCats.Endpoints;
 using StealAllTheCats.Models;
+using StealAllTheCats.Models.Requets;
 using Xunit;
 
 namespace StealAllCats.Tests.Endpoints;
@@ -27,7 +28,7 @@ public class GetCatsEndpointTests
 
         var ep = Factory.Create<GetCatsEndpoint>(context);
 
-        await ep.HandleAsync(new GetCatsRequest { Tag = "Playful", Page = 1, PageSize = 10 }, CancellationToken.None);
+        await ep.HandleAsync(new GetCatsPaginatedRequest { Tag = "Playful", Page = 1, PageSize = 10 }, CancellationToken.None);
         
         var response = ep.Response as GetCatsResponse;
 
