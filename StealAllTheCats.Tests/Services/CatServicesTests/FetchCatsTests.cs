@@ -1,73 +1,46 @@
-﻿using Moq;
+using Moq;
 using StealAllTheCats.Database.Models;
-using StealAllTheCats.Dtos;
-using StealAllTheCats.Dtos.Responses;
 using StealAllTheCats.Tests.Services.CatServicesTests.Fixtures;
 using System.Linq.Expressions;
 using Xunit;
 
 namespace StealAllTheCats.Tests.Services.CatServicesTests;
 
-public class FetchCatsTests : IClassFixture<CatServiceFixture>
+public class GetCatImageTests : IClassFixture<CatServiceFixture>
 {
     private readonly CatServiceFixture _fixture;
 
-    public FetchCatsTests(CatServiceFixture fixture)
+    public GetCatImageTests(CatServiceFixture fixture)
     {
         _fixture = fixture;
-        fixture.ApiClientMock.Reset();
         fixture.CatRepoMock.Reset();
-        fixture.TagRepoMock.Reset();
     }
 
     [Fact]
-    public async Task Should_Report_Duplicates_Explicitly()
+    public async Task ReturnsImageDataWhenExists()
     {
-        // Arrange
-        var apiResponse = new List<ExternalCatApiResponse> { new() { Id = "cat1" } };
-        _fixture.ApiClientMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
-            .ReturnsAsync(Result<List<ExternalCatApiResponse>>.Ok(apiResponse));
+        var imageBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+        var cat = new CatEntity { Id = 1, CatId = "abc", ImageData = imageBytes };
 
-        _fixture.CatRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<CatEntity, bool>>>()))
-            .ReturnsAsync(true);
+        _fixture.CatRepoMock
+            .Setup(r => r.GetByIdAsync(1, It.IsAny<Expression<Func<CatEntity, object>>[]>()))
+            .ReturnsAsync(cat);
 
-        // Act
-        var result = await _fixture.CatService.FetchCatsAsync();
+        var result = await _fixture.CatService.GetCatImageAsync(1, CancellationToken.None);
 
-        // Assert
-        Assert.True(result.Success);
-        Assert.Equal(0, result.Data!.NewCatsCount);
-        Assert.Equal(1, result.Data.DuplicateCatsCount);
+        Assert.NotNull(result);
+        Assert.Equal(imageBytes, result);
     }
 
     [Fact]
-    public async Task Should_Store_Fetched_Cats_Correctly_In_Database()
+    public async Task ReturnsNullWhenCatNotFound()
     {
-        // Arrange
-        var apiResponse = new List<ExternalCatApiResponse>
-        {
-            new() { Id = "cat1", Width = 800, Height = 600, Url = "url1", Breeds = [] }
-        };
-        _fixture.ApiClientMock.Setup(x => x.GetAsync<List<ExternalCatApiResponse>>(It.IsAny<string>()))
-            .ReturnsAsync(Result<List<ExternalCatApiResponse>>.Ok(apiResponse));
+        _fixture.CatRepoMock
+            .Setup(r => r.GetByIdAsync(999, It.IsAny<Expression<Func<CatEntity, object>>[]>()))
+            .ReturnsAsync((CatEntity?)null);
 
-        _fixture.CatRepoMock.Setup(r => r.ExistsAsync(It.IsAny<Expression<Func<CatEntity, bool>>>())).ReturnsAsync(false);
+        var result = await _fixture.CatService.GetCatImageAsync(999, CancellationToken.None);
 
-        _fixture.TagRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<TagEntity, bool>>>()))
-            .ReturnsAsync(new List<TagEntity>());
-
-        // Act
-        await _fixture.CatService.FetchCatsAsync();
-
-        // Assert
-        _fixture.CatRepoMock.Verify(r => r.AddRangeAsync(It.Is<List<CatEntity>>(cats =>
-            cats.Count == 1 &&
-            cats[0].CatId == "cat1" &&
-            cats[0].Width == 800 &&
-            cats[0].Height == 600 &&
-            cats[0].ImageUrl == "url1"
-        )), Times.Once);
-
-        _fixture.CatRepoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        Assert.Null(result);
     }
 }

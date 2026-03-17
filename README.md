@@ -1,145 +1,96 @@
-# 🐱 StealAllTheCats
+# Cat Collector
 
-[![.NET Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/dotnet.yml/badge.svg)](https://github.com/<your-github-username>/<your-repository-name>/actions/workflows/dotnet.yml)
-[![Docker Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/docker-image.yml/badge.svg)](https://github.com/<your-github-username>/<your-repository-name>/actions/workflows/docker-image.yml)
+ASP.NET Core Web API that imports cat images from [TheCatAPI](https://thecatapi.com/), stores them locally, and exposes endpoints for retrieval and filtering. Includes a lightweight Blazor UI.
 
-> Simple and clear guide to get started quickly on local environment using Docker Compose and .NET 8.0.
+## Prerequisites
 
-## 🔧 Prerequisites
-Ensure the following are installed on your computer:
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
-- Any IDE (recommended: [JetBrains Rider](https://www.jetbrains.com/rider/) or [Visual Studio](https://visualstudio.microsoft.com/downloads/))
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for containerized setup)
 
-Verify the installations:
-``` bash
-docker --version
-dotnet --version
-```
-## 🚀 Getting Started Locally
-### 1. Clone the Repository:
-Begin by cloning your repo:
-``` bash
-git clone https://github.com/devblaze/StealAllTheCats.git
-cd StealAllTheCats
-```
-### 2. Starting Local Development Environment using Docker Compose:
-Simply use Docker Compose to build and run all necessary services (SQL Server database included):
-``` bash
+## Quick Start with Docker Compose
+
+```bash
 docker compose build
 docker compose up
 ```
-Docker Compose will:
-- Create a fresh SQL Server DB instance.
-- Build and run your ASP.NET application inside Docker.
-- **Automatically apply migrations** and create database/schema (`CatsDb`).
 
-### 3. Running Application (direct URLs):
-Open your browser or API testing tool to access:
+This starts the API and a SQL Server instance. The database is created and migrated automatically on startup.
 
-| Application URLs                                               | Environment                           |
-|----------------------------------------------------------------|---------------------------------------|
-| [Docker Swagger](http://localhost:8080/swagger/index.html)     | Swagger (API Docs Local Development)  |
-| [.NET https Launch](https://localhost:7284/swagger/index.html) | Swagger (API Docs Local Development)  |
-| [.NET http Launch](http://localhost:5221/swagger/index.html)   | Swagger (API Docs Local Development)  |                                      |
+- **Swagger**: http://localhost:8080/swagger
+- **Blazor UI**: http://localhost:8080/ui
 
-## 🖥 Developing Locally Without Docker:
-You can optionally build and run without Docker directly from your IDE or CLI:
-- Open solution (`StealAllTheCats.sln`) in Rider/Visual Studio.
-- Update project dependencies and restore packages explicitly if needed:
-``` bash
+To tear down everything including data:
+```bash
+docker compose down -v
+```
+
+## Running Without Docker
+
+You need a SQL Server instance. Update the connection string in `appsettings.json`, then:
+
+```bash
 dotnet restore
-```
-- Apply migrations manually on your local DB (first-time setup):
-``` bash
-dotnet ef database update -p StealAllTheCats -s StealAllTheCats
-```
-- Run directly from IDE or using CLI:
-``` bash
 dotnet run --project StealAllTheCats
 ```
-- Now navigate to [https://localhost:8080/swagger](https://localhost:8080/swagger) (or whatever port reported by your OS) explicitly to test API calls.
 
-## ✅ Useful Docker Compose Commands Clearly Shown:
-- **Stop and remove containers**, but preserve database data (do NOT remove volume):
-``` bash
-docker compose down
-```
-- **Stop and cleanup everything completely** (removes database volumes/data as well, started fresh):
-``` bash
-docker compose down -v
-```
-- **Inspect logs clearly:**
-``` bash
-docker compose logs -f
-```
-## 🧹 Project Structure Explained Clearly:
-``` 
-📦 StealAllTheCats
-├── 📁 Controllers/                      # Web API Controllers.
-├── 📁 Dtos/                             # Data Transfer Objects.
-│   ├── 📁 Mappers/                      # DTO mapping logic.
-│   ├── 📁 Requets/                      # Request DTOs.
-│   ├── 📁 Responses/                    # Response DTOs.
-│   ├── 📁 Results/                      # Operation results.
-│   └── 📜 Result.cs                     # Generic Result wrapper.
-├── 📁 Services/                         # Business logic implementations.
-│   ├── 📁 Interfaces/                   # Interfaces for service abstraction.
-│   ├── 📜 ApiClient.cs                  # API client implementation.
-│   └── 📜 CatService.cs                 # Cat-related operations.
-├── 📁 Properties/                       # Launch profiles and settings.
-├── 📜 appsettings.json                  # Application settings (DB connections, API keys).
-├── 📜 appsettings.Development.json      # Dev-specific configuration.
-├── 🐋 Dockerfile                        # Containerization instructions.
-├── 📜 Program.cs                        # Application entry point.
-└── 📜 StealAllTheCats.csproj            # Project file.
-📦 StealAllTheCats.Common
-├── 📁 Dtos/                             # Shared Data Transfer Objects.
-└── 📜 Configuration.cs                  # Shared configuration helpers.
-📦 StealAllTheCats.Database
-├── 📁 Migrations/                       # EF Core migration files.
-├── 📁 Models/                           # Database entities.
-├── 📁 Repositories/                     # Database access logic.
-│   ├── 📁 Interfaces/                   # Repository interfaces.
-│   └── 📜 GenericRepository.cs          # Generic repository implementation.
-└── 📜 ApplicationDbContext.cs           # EF Core database context.
-📦 StealAllTheCats.Tests
-├── 📁 Services/                         # Tests for business logic services.
-│   └── 📁 CatServicesTests/             # Cat service specific tests.
-│       ├── 📁 Fixtures/                 # Shared test setup.
-│       ├── 📜 FetchCatsTests.cs         # Tests for fetching and storing cats.
-│       ├── 📜 GetCatByIdTests.cs        # Tests for retrieving single cats by ID.
-└──     └── 📜 GetCatsPaginatedTests.cs  # Tests for cat pagination and filtering.
-
-
-```
-## 🌟 Recommended IDE Configuration and Tools (optional but recommended):
-- **JetBrains Rider**:
-    - Automatic Docker Compose integration: Open `compose.yaml` directly to interact visually and debug containers.
-    - Integrated debugging, migrations, NuGet management.
-
-- **Visual Studio**:
-    - Good built-in Docker support, run/debug containers directly from IDE.
-
-## 📖 EF Core Migrations - How Clearly Explained:
-Command clearly explained for adding migrations explicitly if you modify entities/models in EF Core yourself:
-``` bash
-dotnet ef migrations add MigrationName -p StealAllTheCats -s StealAllTheCats
-dotnet ef database update -p StealAllTheCats -s StealAllTheCats
-```
-## 💡 Troubleshooting & Common Issues Explicitly Mentioned:
-### Issue: "Cannot connect/login to DB immediately after container starts."
-- This issue occurs if migrations run when the SQL container hasn't fully initialized.
-- Clear solution: Just wait longer or explicitly restart to retry, Docker compose health-check provided in YAML file ensures readiness anyway.
-
-### Issue: "Database migration conflict/error: Object already exists."
-- Ensure you're clearly using `dbContext.Database.Migrate();` only (not `EnsureCreated()`).
-- If issues persist (caused by conflicting DB states), explicitly restart completely fresh:
-``` bash
-docker compose down -v
-docker compose build
-docker compose up
+Migrations are applied automatically at startup. Or manually:
+```bash
+dotnet ef database update -p StealAllTheCats.Database -s StealAllTheCats
 ```
 
-## 📝 License:
-This project is licensed under the MIT License - see the LICENSE file for details.
+- **Swagger**: http://localhost:5221/swagger
+- **Blazor UI**: http://localhost:5221/ui
+
+## API Endpoints
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/cat-imports` | Starts a background import of 25 cats. Returns a job ID immediately. |
+| GET | `/api/cat-imports/{id}` | Returns import job status (queued, running, completed, failed) with counters. |
+| GET | `/api/cats` | Returns paged cats. Query params: `page`, `pageSize`, `tag`. |
+| GET | `/api/cats/{id}` | Returns a single cat by database ID, including tags. |
+| GET | `/api/cats/{id}/image` | Returns the stored cat image bytes. |
+
+## Running Tests
+
+```bash
+dotnet test
+```
+
+To run a specific test class:
+```bash
+dotnet test --filter "FullyQualifiedName~CatImportServiceTests"
+```
+
+## EF Core Migrations
+
+```bash
+dotnet ef migrations add MigrationName -p StealAllTheCats.Database -s StealAllTheCats
+dotnet ef database update -p StealAllTheCats.Database -s StealAllTheCats
+```
+
+## Architecture
+
+Four projects in the solution:
+
+- **StealAllTheCats** — API controllers, services, background job infrastructure, Blazor UI
+- **StealAllTheCats.Database** — EF Core DbContext, entity models, generic repository
+- **StealAllTheCats.Common** — Shared configuration binding
+- **StealAllTheCats.Tests** — xUnit + Moq unit tests
+
+### Background Jobs
+
+Import jobs use a `Channel<int>` queue with a `BackgroundService` worker. When `POST /api/cat-imports` is called, a job record is created in the database (status: queued), its ID is pushed onto the channel, and the response returns immediately. The worker picks up the job, sets it to running, fetches 25 cats with breed data from TheCatAPI, downloads each image, extracts temperament tags, and saves everything to the database. Duplicate cats (by CatId) are skipped, not overwritten.
+
+### Image Storage
+
+Images are stored as `byte[]` in the database (`CatEntity.ImageData` column) and served via `GET /api/cats/{id}/image`.
+
+**Trade-offs:**
+- Storing in the database keeps the deployment self-contained — no volume mounts or file path management needed. For 25 cat images (~5-15 MB total), the overhead is negligible.
+- For a production service with thousands of images, filesystem or blob storage (S3, Azure Blob) would be more appropriate. The database approach was chosen here for simplicity and portability in a demo/review context.
+- The original TheCatAPI URL is also stored in `ImageUrl` as a fallback reference.
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.

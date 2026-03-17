@@ -1,6 +1,6 @@
-﻿using Moq;
+using Moq;
 using StealAllTheCats.Database.Models;
-using StealAllTheCats.Dtos.Requets;
+using StealAllTheCats.Dtos.Requests;
 using StealAllTheCats.Tests.Services.CatServicesTests.Fixtures;
 using System.Linq.Expressions;
 using Xunit;
@@ -18,16 +18,15 @@ public class GetCatsPaginatedTests : IClassFixture<CatServiceFixture>
     }
 
     [Fact]
-    public async Task Should_Return_Correct_Pagination_And_Tag_Filtering()
+    public async Task ReturnsCorrectPaginationWithTagFilter()
     {
-        // Arrange
         var request = new GetCatsRequest { Page = 1, PageSize = 10, Tag = "Friendly" };
 
         var cats = new List<CatEntity>
         {
             new() { Id = 1, CatId = "cat1", Tags = [new TagEntity { Name = "Friendly" }] }
         };
-        
+
         _fixture.CatRepoMock.Setup(r => r.GetPaginatedAsync(
                 It.IsAny<int>(),
                 It.IsAny<int>(),
@@ -35,25 +34,23 @@ public class GetCatsPaginatedTests : IClassFixture<CatServiceFixture>
                 It.IsAny<Expression<Func<CatEntity, object>>[]>()))
             .ReturnsAsync((cats, 1));
 
-        // Act
         var result = await _fixture.CatService.GetCatsPaginatedAsync(request, CancellationToken.None);
 
-        // Assert
         Assert.True(result.Success);
         Assert.Single(result.Data!.Cats);
         Assert.Equal("cat1", result.Data.Cats.First().CatId);
         Assert.Equal(1, result.Data.TotalItems);
+        Assert.Equal(1, result.Data.Page);
     }
-    
+
     [Fact]
-    public async Task GetCatsPaginated_ShouldReturnTagsAndImageUrl()
+    public async Task ReturnsTagsAndImageUrlInResults()
     {
-        // Arrange
         var request = new GetCatsRequest { Page = 1, PageSize = 10 };
 
         var cats = new List<CatEntity>
         {
-            new CatEntity
+            new()
             {
                 Id = 1,
                 CatId = "cat1",
@@ -69,15 +66,30 @@ public class GetCatsPaginatedTests : IClassFixture<CatServiceFixture>
                 It.IsAny<Expression<Func<CatEntity, object>>[]>()))
             .ReturnsAsync((cats, 1));
 
-        // Act
         var result = await _fixture.CatService.GetCatsPaginatedAsync(request, CancellationToken.None);
 
-        // Assert
         Assert.True(result.Success);
-        Assert.Single(result.Data.Cats);
+        Assert.Single(result.Data!.Cats);
         var catDto = result.Data.Cats.First();
         Assert.Equal("https://example.com/cat.jpg", catDto.ImageUrl);
         Assert.Contains("Friendly", catDto.Tags);
         Assert.Contains("Lazy", catDto.Tags);
+    }
+
+    [Fact]
+    public async Task CalculatesSkipCorrectly()
+    {
+        var request = new GetCatsRequest { Page = 3, PageSize = 5 };
+
+        _fixture.CatRepoMock.Setup(r => r.GetPaginatedAsync(
+                10, 5, null,
+                It.IsAny<Expression<Func<CatEntity, object>>[]>()))
+            .ReturnsAsync((new List<CatEntity>(), 0));
+
+        var result = await _fixture.CatService.GetCatsPaginatedAsync(request, CancellationToken.None);
+
+        Assert.True(result.Success);
+        _fixture.CatRepoMock.Verify(r => r.GetPaginatedAsync(
+            10, 5, null, It.IsAny<Expression<Func<CatEntity, object>>[]>()), Times.Once);
     }
 }

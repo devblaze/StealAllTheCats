@@ -1,16 +1,18 @@
-﻿services:
+services:
   stealallthecats:
     container_name: stealallthecats
     build:
       context: .
       dockerfile: StealAllTheCats/Dockerfile
-    image: stealallthecats:latest  # explicitly tag your local built image
+    image: stealallthecats:latest
     ports:
       - "8080:8080"
-      - "8081:8081"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=db;Database=CatsDb;User Id=sa;Password=YourPasswordHere;TrustServerCertificate=True
 
   db:
@@ -23,6 +25,12 @@
       ACCEPT_EULA: "Y"
     volumes:
       - catdb-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "YourPasswordHere" -C -Q "SELECT 1" || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
 
 volumes:
   catdb-data:

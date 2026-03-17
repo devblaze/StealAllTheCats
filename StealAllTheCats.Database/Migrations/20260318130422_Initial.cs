@@ -17,10 +17,11 @@ namespace StealAllTheCats.Database.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CatId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CatId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Width = table.Column<int>(type: "int", nullable: false),
                     Height = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImageData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -29,12 +30,31 @@ namespace StealAllTheCats.Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ImportJobs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    Imported = table.Column<int>(type: "int", nullable: false),
+                    Skipped = table.Column<int>(type: "int", nullable: false),
+                    Failed = table.Column<int>(type: "int", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Completed = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ImportJobs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -70,6 +90,18 @@ namespace StealAllTheCats.Database.Migrations
                 name: "IX_CatEntityTagEntity_TagsId",
                 table: "CatEntityTagEntity",
                 column: "TagsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cats_CatId",
+                table: "Cats",
+                column: "CatId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_Name",
+                table: "Tags",
+                column: "Name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -77,6 +109,9 @@ namespace StealAllTheCats.Database.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CatEntityTagEntity");
+
+            migrationBuilder.DropTable(
+                name: "ImportJobs");
 
             migrationBuilder.DropTable(
                 name: "Cats");

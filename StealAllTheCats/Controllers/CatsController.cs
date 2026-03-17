@@ -1,44 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using StealAllTheCats.Dtos;
-using StealAllTheCats.Dtos.Requets;
+using StealAllTheCats.Dtos.Requests;
 using StealAllTheCats.Services.Interfaces;
 
 namespace StealAllTheCats.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/cats")]
 public class CatsController(ICatService catService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetCats([FromQuery] GetCatsRequest request, CancellationToken ct)
     {
         var result = await catService.GetCatsPaginatedAsync(request, ct);
-        
-        return GetResult(result);
+        return ToResponse(result);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetCat(int id, CancellationToken ct)
     {
         var result = await catService.GetCatByIdAsync(id, ct);
-
-        return GetResult(result);
+        return ToResponse(result);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> FetchCats(CancellationToken ct, int catImages = 25)
+    [HttpGet("{id:int}/image")]
+    public async Task<IActionResult> GetCatImage(int id, CancellationToken ct)
     {
-        var result = await catService.FetchCatsAsync(catImages);
-        
-        return GetResult(result);
+        var imageData = await catService.GetCatImageAsync(id, ct);
+
+        if (imageData == null || imageData.Length == 0)
+            return NotFound("Image not found.");
+
+        return File(imageData, "image/jpeg");
     }
 
-    private IActionResult GetResult<T>(Result<T> result)
+    private IActionResult ToResponse<T>(Result<T> result)
     {
         if (!result.Success)
-            return StatusCode(result.ErrorCode, result.ErrorMessage!);
+            return StatusCode(result.ErrorCode, new { error = result.ErrorMessage });
 
         return Ok(result.Data);
     }
-    
 }

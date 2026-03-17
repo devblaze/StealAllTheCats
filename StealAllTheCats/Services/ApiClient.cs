@@ -1,4 +1,4 @@
-﻿using StealAllTheCats.Dtos;
+using StealAllTheCats.Dtos;
 using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
@@ -37,5 +37,10 @@ public class ApiClient : IApiClient
         {
             return Result<T>.Fail("Error occurred during request.", 500, ex);
         }
+    }
+
+    public async Task<byte[]> DownloadBytesAsync(string url)
+    {
+        return await _http.GetByteArrayAsync(url);
     }
 }

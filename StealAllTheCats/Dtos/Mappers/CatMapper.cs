@@ -1,4 +1,4 @@
-﻿using StealAllTheCats.Database.Models;
+using StealAllTheCats.Database.Models;
 using StealAllTheCats.Dtos.Results;
 
 namespace StealAllTheCats.Dtos.Mappers;
@@ -17,7 +17,7 @@ public static class CatMapper
             Tags = entity.Tags?.Select(tag => tag.Name) ?? []
         };
     }
-    
+
     public static List<CatDto> ToDtoList(IEnumerable<CatEntity> entities)
     {
         return entities.Select(ToDto).ToList();

@@ -1,0 +1,150 @@
+@page "/ui"
+@rendermode InteractiveServer
+@using StealAllTheCats.BackgroundJobs
+@using StealAllTheCats.Dtos.Requests
+@using StealAllTheCats.Dtos.Results
+@using StealAllTheCats.Services.Interfaces
+@implements IDisposable
+
+@inject ICatImportService ImportService
+@inject ICatService CatService
+@inject ImportQueue Queue
+
+<h1>Cat Collector</h1>
+
+<div style="margin-bottom: 20px; padding: 16px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1);">
+    <h3 style="margin-top:0;">Import</h3>
+    <button @onclick="StartImport" disabled="@_importing"
+            style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        @(_importing ? "Starting..." : "Start Import (25 cats)")
+    </button>
+
+    @if (_currentJob != null)
+    {
+        <div style="margin-top: 12px; padding: 12px; background: #f0f9ff; border-radius: 4px;">
+            <strong>Job #@_currentJob.Id</strong> &mdash;
+            <span style="text-transform: capitalize;">@_currentJob.Status</span>
+            @if (_currentJob.Status is "running" or "completed")
+            {
+                <span> | Imported: @_currentJob.Imported | Skipped: @_currentJob.Skipped | Failed: @_currentJob.Failed</span>
+            }
+            @if (!string.IsNullOrEmpty(_currentJob.Message))
+            {
+                <div style="margin-top: 4px; font-size: 0.9em; color: #555;">@_currentJob.Message</div>
+            }
+        </div>
+    }
+</div>
+
+<div style="padding: 16px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1);">
+    <h3 style="margin-top:0;">Cats</h3>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+        <input @bind="_tagFilter" @bind:event="oninput" placeholder="Filter by tag..."
+               style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;" />
+        <button @onclick="LoadCats"
+                style="padding: 6px 12px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Search
+        </button>
+    </div>
+
+    @if (_cats != null && _cats.Count > 0)
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+            @foreach (var cat in _cats)
+            {
+                <div style="border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;">
+                    <img src="@cat.ImageUrl" alt="Cat" style="width: 100%; height: 150px; object-fit: cover;" />
+                    <div style="padding: 8px; font-size: 0.85em;">
+                        <div style="font-weight: 600;">@cat.CatId</div>
+                        <div style="color: #666; margin-top: 4px;">
+                            @string.Join(", ", cat.Tags)
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
+            <button @onclick="PreviousPage" disabled="@(_page <= 1)"
+                    style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: pointer;">
+                Prev
+            </button>
+            <span style="padding: 4px 8px;">Page @_page of @_totalPages</span>
+            <button @onclick="NextPage" disabled="@(_page >= _totalPages)"
+                    style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; background: white; cursor: pointer;">
+                Next
+            </button>
+        </div>
+    }
+    else if (_catsLoaded)
+    {
+        <p style="color: #888;">No cats found.</p>
+    }
+</div>
+
+@code {
+    private bool _importing;
+    private ImportJobDto? _currentJob;
+    private List<CatDto>? _cats;
+    private bool _catsLoaded;
+    private string? _tagFilter;
+    private int _page = 1;
+    private int _totalPages = 1;
+    private Timer? _pollTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCats();
+    }
+
+    private async Task StartImport()
+    {
+        _importing = true;
+        _currentJob = await ImportService.StartImportAsync();
+        await Queue.EnqueueAsync(_currentJob.Id);
+        _importing = false;
+
+        _pollTimer?.Dispose();
+        _pollTimer = new Timer(async _ => await PollStatus(), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
+    }
+
+    private async Task PollStatus()
+    {
+        if (_currentJob == null) return;
+
+        var status = await ImportService.GetImportStatusAsync(_currentJob.Id, CancellationToken.None);
+        if (status == null) return;
+
+        _currentJob = status;
+        await InvokeAsync(StateHasChanged);
+
+        if (status.Status is "completed" or "failed")
+        {
+            _pollTimer?.Dispose();
+            _pollTimer = null;
+            await LoadCats();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadCats()
+    {
+        var request = new GetCatsRequest { Page = _page, PageSize = 12, Tag = _tagFilter };
+        var result = await CatService.GetCatsPaginatedAsync(request, CancellationToken.None);
+
+        if (result.Success)
+        {
+            _cats = result.Data!.Cats;
+            _totalPages = Math.Max(1, (int)Math.Ceiling(result.Data.TotalItems / 12.0));
+            _catsLoaded = true;
+        }
+    }
+
+    private async Task PreviousPage() { _page--; await LoadCats(); }
+    private async Task NextPage() { _page++; await LoadCats(); }
+
+    public void Dispose()
+    {
+        _pollTimer?.Dispose();
+    }
+}
