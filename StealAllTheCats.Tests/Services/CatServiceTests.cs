@@ -30,13 +30,21 @@ public class CatServiceTests
     public async Task FetchCatsAsync_ShouldAddCatsToDb()
     {
         // Arrange
-        _apiClientMock.Setup(x => x.GetCatsAsync(It.IsAny<int>())).ReturnsAsync(new List<CatApiResponse>
-        {
-            new() { Id = "api-cat-1", Width = 300, Height = 300, Url = "http://cat-image.com/cat-1.jpg", 
-                Breeds = new List<CatBreed>{new CatBreed{ Temperament = "Playful, Active" }}}
-        });
+        _apiClientMock.Setup(x => x.GetAsync<List<CatApiResponse>>(It.IsAny<string>()))
+            .ReturnsAsync(new List<CatApiResponse>
+            {
+                new CatApiResponse
+                {
+                    Id = "api-cat-1",
+                    Width = 300,
+                    Height = 300,
+                    Url = "http://cat-image.com/cat-1.jpg",
+                    Breeds = new List<CatBreed> { new() { Temperament = "Playful, Active" } }
+                }
+            });
 
-        _apiClientMock.Setup(x => x.GetCatImageAsync(It.IsAny<string>())).ReturnsAsync(new byte[] {1, 2, 3});
+        _apiClientMock.Setup(x => x.GetByteArrayAsync(It.IsAny<string>()))
+            .ReturnsAsync(new byte[] { 1, 2, 3 });
 
         // Act
         var result = await _catService.FetchCatsAsync(1);

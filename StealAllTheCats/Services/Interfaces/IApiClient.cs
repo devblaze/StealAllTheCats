@@ -1,11 +1,8 @@
-﻿using StealAllTheCats.Models.Responses;
+﻿namespace StealAllTheCats.Services.Interfaces;
 
-namespace StealAllTheCats.Services.Interfaces
+public interface IApiClient
 {
-    public interface IApiClient
-    {
-        public Task<List<CatApiResponse>> GetCatsAsync(int limit);
+    Task<T?> GetAsync<T>(string url);
 
-        public Task<byte[]> GetCatImageAsync(string url);
-    }
+    Task<byte[]> GetByteArrayAsync(string url);
 }
