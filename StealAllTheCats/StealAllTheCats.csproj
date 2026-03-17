@@ -1,19 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    </PropertyGroup>
+      <UserSecretsId>c22f8cd3-2d97-47c7-8d54-39a4044da7fd</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="FastEndpoints" Version="5.35.0" />
         <PackageReference Include="FastEndpoints.Swagger" Version="5.35.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.14" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,7 +26,6 @@
     <ItemGroup>
       <Folder Include="Data\" />
       <Folder Include="Models\" />
-      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>

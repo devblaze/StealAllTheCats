@@ -13,7 +13,7 @@ builder.Services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddHttpClient<CatService>(client =>
+builder.Services.AddHttpClient<ICatService, CatService>(client =>
 {
     client.BaseAddress = new Uri("https://api.thecatapi.com/v1/");
     client.DefaultRequestHeaders.Add("x-api-key", "YOUR_CAT_API_KEY");

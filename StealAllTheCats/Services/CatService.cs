@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace StealAllTheCats.Services;
 
-public class CatService
+public class CatService : ICatService
 {
     private readonly HttpClient _client;
 
@@ -29,7 +29,7 @@ public class CatService
                 .ToList()
         }).ToList() ?? new List<CatEntity>();
     }
-    
+
     private class CatApiResponse
     {
         public string Id { get; set; } = "";
