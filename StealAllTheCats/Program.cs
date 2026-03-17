@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
 using StealAllTheCats.Repositories;
+using StealAllTheCats.Repositories.Interfaces;
 using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 
@@ -14,9 +15,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<ICatRepository, CatRepository>();
-builder.Services.AddScoped<ITagRepository, TagRepository>();
-
 builder.Services.AddHttpClient<IApiClient, ApiClient>();
 builder.Services.AddScoped<ICatService, CatService>();
 

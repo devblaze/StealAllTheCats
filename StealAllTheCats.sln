@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCats.Tests", "StealAllTheCats.Tests\StealAllTheCats.Tests.csproj", "{D3394F14-9E86-44BD-9E9E-233A0710E447}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCats.Database", "StealAllTheCats.Database\StealAllTheCats.Database.csproj", "{03DC6FD7-0F6F-4E21-A9F1-2BCBB4FB2FF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCats.Common", "StealAllTheCats.Common\StealAllTheCats.Common.csproj", "{C3A81A3D-DF34-4EBF-9CA7-F7AA7C9466B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +27,13 @@ Global
 		{D3394F14-9E86-44BD-9E9E-233A0710E447}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3394F14-9E86-44BD-9E9E-233A0710E447}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3394F14-9E86-44BD-9E9E-233A0710E447}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03DC6FD7-0F6F-4E21-A9F1-2BCBB4FB2FF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03DC6FD7-0F6F-4E21-A9F1-2BCBB4FB2FF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03DC6FD7-0F6F-4E21-A9F1-2BCBB4FB2FF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03DC6FD7-0F6F-4E21-A9F1-2BCBB4FB2FF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3A81A3D-DF34-4EBF-9CA7-F7AA7C9466B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3A81A3D-DF34-4EBF-9CA7-F7AA7C9466B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3A81A3D-DF34-4EBF-9CA7-F7AA7C9466B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3A81A3D-DF34-4EBF-9CA7-F7AA7C9466B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

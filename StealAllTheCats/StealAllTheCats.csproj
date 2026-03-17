@@ -30,4 +30,8 @@
       <Folder Include="Data\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\StealAllTheCats.Common\StealAllTheCats.Common.csproj" />
+    </ItemGroup>
+
 </Project>

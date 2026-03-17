@@ -1,17 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StealAllTheCats.Data;
+﻿using StealAllTheCats.Common;
+using StealAllTheCats.Common.Dtos;
 using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Mappers;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Responses;
 using StealAllTheCats.Dtos.Results;
 using StealAllTheCats.Models;
+using StealAllTheCats.Repositories.Interfaces;
 using StealAllTheCats.Services.Interfaces;
+using System.Linq.Expressions;
 
 namespace StealAllTheCats.Services;
 
-public class CatService(ApplicationDbContext dbContext, IApiClient apiClient, IConfiguration configuration) : ICatService
+public class CatService(IApiClient apiClient, IConfiguration configuration, IGenericRepository<CatEntity> catRepository, IGenericRepository<TagEntity> tagRepository)
+    : ICatService
 {
+    private readonly CatApiConfig _configuration = configuration.CatApiConfig();
+
     public async Task<Result<FetchCatsResult>> FetchCatsAsync(int limit = 25)
     {
         var apiCatsResult = await GetCatsAsync(limit);
@@ -23,7 +28,7 @@ public class CatService(ApplicationDbContext dbContext, IApiClient apiClient, IC
 
         foreach (var apiCat in apiCatsResult.Data!)
         {
-            if (await dbContext.Cats.AnyAsync(c => c.CatId == apiCat.Id))
+            if (catRepository.ExistsAsync(c => c.CatId == apiCat.Id).Result)
             {
                 duplicateCount++;
                 continue;
@@ -44,9 +49,9 @@ public class CatService(ApplicationDbContext dbContext, IApiClient apiClient, IC
                 Tags = tags
             });
         }
-
-        await dbContext.Cats.AddRangeAsync(newCats);
-        await dbContext.SaveChangesAsync();
+        
+        await catRepository.AddRangeAsync(newCats);
+        await catRepository.SaveChangesAsync();
 
         return Result<FetchCatsResult>.Ok(new FetchCatsResult
         {
@@ -64,34 +69,33 @@ public class CatService(ApplicationDbContext dbContext, IApiClient apiClient, IC
         });
     }
 
-    public async Task<Result<CatPaginatedResult>> GetCatsPaginatedAsync(GetCatsRequest request,
-        CancellationToken cancellationToken)
+    public async Task<Result<CatPaginatedResult>> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
     {
-        var query = dbContext.Cats.Include(c => c.Tags).AsQueryable();
+        Expression<Func<CatEntity, bool>>? filter = null;
 
         if (!string.IsNullOrWhiteSpace(request.Tag))
         {
-            query = query.Where(c => c.Tags.Any(t => t.Name == request.Tag));
+            filter = c => c.Tags.Any(t => t.Name == request.Tag);
         }
 
-        var totalCats = await query.CountAsync(cancellationToken);
-        var fetchedCats = await query.Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
+        int skip = (request.Page - 1) * request.PageSize;
+        int take = request.PageSize;
 
-        var dtoList = CatMapper.ToDtoList(fetchedCats);
+        var (cats, totalItems) = await catRepository.GetPaginatedAsync(skip, take, filter);
+
+        var catDtos = cats.Select(CatMapper.ToDto).ToList();
 
         return Result<CatPaginatedResult>.Ok(new CatPaginatedResult
         {
-            TotalItems = totalCats,
-            Cats = dtoList
+            TotalItems = totalItems,
+            Cats = catDtos
         });
     }
 
+
     public async Task<Result<CatDto?>> GetCatByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var cat = await dbContext.Cats.Include(c => c.Tags)
-            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var cat = await catRepository.GetByIdAsync(id);
 
         if (cat == null)
             return Result<CatDto?>.Fail("Cat not found.");
@@ -100,22 +104,29 @@ public class CatService(ApplicationDbContext dbContext, IApiClient apiClient, IC
         return Result<CatDto?>.Ok(catDto);
     }
 
-    public async Task<Result<List<ExternalCatApiResponse>>> GetCatsAsync(int limit)
+    private async Task<Result<List<ExternalCatApiResponse>>> GetCatsAsync(int limit)
     {
-        return await apiClient.GetAsync<List<ExternalCatApiResponse>>($"images/search?limit={limit}&has_breeds=true&api_key={configuration["CatApi:ApiKey"]}");
+        return await apiClient.GetAsync<List<ExternalCatApiResponse>>($"images/search?limit={limit}&has_breeds=true&api_key={_configuration.ApiKey}");
     }
 
-    private async Task<List<TagEntity>> GetOrCreateTags(IEnumerable<string> names)
+    private async Task<List<TagEntity>> GetOrCreateTags(IEnumerable<string> tagNames)
     {
-        var existingTags = await dbContext.Tags.Where(t => names.Contains(t.Name)).ToListAsync();
-        var newTagNames = names.Except(existingTags.Select(t => t.Name)).ToList();
+        var existingTags = await tagRepository.FindAsync(tag => tagNames.Contains(tag.Name));
+
+        var tagList = existingTags.ToList();
+
+        var existingTagNames = tagList.Select(tag => tag.Name).ToList();
+        var newTagNames = tagNames.Except(existingTagNames).ToList();
 
         var newTags = newTagNames.Select(name => new TagEntity { Name = name }).ToList();
 
-        await dbContext.Tags.AddRangeAsync(newTags);
-        await dbContext.SaveChangesAsync();
+        if (newTags.Any())
+        {
+            await tagRepository.AddRangeAsync(newTags);
+            await tagRepository.SaveChangesAsync();
+            tagList.AddRange(newTags);
+        }
 
-        existingTags.AddRange(newTags);
-        return existingTags;
+        return tagList;
     }
 }
