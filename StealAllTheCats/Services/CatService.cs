@@ -81,7 +81,7 @@ public class CatService(IApiClient apiClient, IConfiguration configuration, IGen
         int skip = (request.Page - 1) * request.PageSize;
         int take = request.PageSize;
 
-        var (cats, totalItems) = await catRepository.GetPaginatedAsync(skip, take, filter);
+        var (cats, totalItems) = await catRepository.GetPaginatedAsync(skip, take, filter, c => c.Tags);
 
         var catDtos = cats.Select(CatMapper.ToDto).ToList();
 
@@ -92,10 +92,9 @@ public class CatService(IApiClient apiClient, IConfiguration configuration, IGen
         });
     }
 
-
     public async Task<Result<CatDto?>> GetCatByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var cat = await catRepository.GetByIdAsync(id);
+        var cat = await catRepository.GetByIdAsync(id, c => c.Tags);
 
         if (cat == null)
             return Result<CatDto?>.Fail("Cat not found.");

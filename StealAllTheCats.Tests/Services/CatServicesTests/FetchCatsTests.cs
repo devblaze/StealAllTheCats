@@ -2,19 +2,19 @@
 using StealAllTheCats.Database.Models;
 using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Responses;
+using StealAllTheCats.Tests.Services.CatServicesTests.Fixtures;
 using System.Linq.Expressions;
 using Xunit;
 
 namespace StealAllTheCats.Tests.Services.CatServicesTests;
 
-public class FetchCatsAsyncTests : IClassFixture<CatServiceFixture>
+public class FetchCatsTests : IClassFixture<CatServiceFixture>
 {
     private readonly CatServiceFixture _fixture;
 
-    public FetchCatsAsyncTests(CatServiceFixture fixture)
+    public FetchCatsTests(CatServiceFixture fixture)
     {
         _fixture = fixture;
-        // Reset mocks before each test
         fixture.ApiClientMock.Reset();
         fixture.CatRepoMock.Reset();
         fixture.TagRepoMock.Reset();

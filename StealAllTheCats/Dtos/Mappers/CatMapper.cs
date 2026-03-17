@@ -13,6 +13,7 @@ public static class CatMapper
             CatId = entity.CatId,
             Width = entity.Width,
             Height = entity.Height,
+            ImageUrl = entity.ImageUrl,
             Tags = entity.Tags?.Select(tag => tag.Name) ?? []
         };
     }
