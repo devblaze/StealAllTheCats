@@ -76,21 +76,41 @@ docker compose logs -f
 ## 🧹 Project Structure Explained Clearly:
 ``` 
 📦 StealAllTheCats
- ├── 📁 Controllers/            # Web API Controllers
- ├── 📁 Data/                   # Contains DB context, migrations
- ├── 📁 Dtos/                   # Contains Data Transfer Objects
- ├── 📁 Migrations/             # Database migration files
- ├── 📁 Models/                 # Database/entities classes
- ├── 📁 Services/               # Business logic services implementation
- ├── 📁 Properties/             # Launch profiles, etc.
- ├── 🐋 Dockerfile              # Dockerfile for building/running the app clearly
- ├── 📜 Program.cs              # Application entrypoint
- ├── 📜 appsettings.json        # Environment settings (DB connections, etc.)
- ├── 📦 compose.yaml            # Docker-compose file for container orchestration
- └── 📦 StealAllTheCats.csproj  # Project definition
- 📦 StealAllTheCats.Tests
- ├── 📁 Controllers/            # Contains Tests for the CatController
- └── 📁 Services/               # Contains Tests for the CatService
+├── 📁 Controllers/                      # Web API Controllers.
+├── 📁 Dtos/                             # Data Transfer Objects.
+│   ├── 📁 Mappers/                      # DTO mapping logic.
+│   ├── 📁 Requets/                      # Request DTOs.
+│   ├── 📁 Responses/                    # Response DTOs.
+│   ├── 📁 Results/                      # Operation results.
+│   └── 📜 Result.cs                     # Generic Result wrapper.
+├── 📁 Services/                         # Business logic implementations.
+│   ├── 📁 Interfaces/                   # Interfaces for service abstraction.
+│   ├── 📜 ApiClient.cs                  # API client implementation.
+│   └── 📜 CatService.cs                 # Cat-related operations.
+├── 📁 Properties/                       # Launch profiles and settings.
+├── 📜 appsettings.json                  # Application settings (DB connections, API keys).
+├── 📜 appsettings.Development.json      # Dev-specific configuration.
+├── 🐋 Dockerfile                        # Containerization instructions.
+├── 📜 Program.cs                        # Application entry point.
+└── 📜 StealAllTheCats.csproj            # Project file.
+📦 StealAllTheCats.Common
+├── 📁 Dtos/                             # Shared Data Transfer Objects.
+└── 📜 Configuration.cs                  # Shared configuration helpers.
+📦 StealAllTheCats.Database
+├── 📁 Migrations/                       # EF Core migration files.
+├── 📁 Models/                           # Database entities.
+├── 📁 Repositories/                     # Database access logic.
+│   ├── 📁 Interfaces/                   # Repository interfaces.
+│   └── 📜 GenericRepository.cs          # Generic repository implementation.
+└── 📜 ApplicationDbContext.cs           # EF Core database context.
+📦 StealAllTheCats.Tests
+├── 📁 Services/                         # Tests for business logic services.
+│   └── 📁 CatServicesTests/             # Cat service specific tests.
+│       ├── 📁 Fixtures/                 # Shared test setup.
+│       ├── 📜 FetchCatsTests.cs         # Tests for fetching and storing cats.
+│       ├── 📜 GetCatByIdTests.cs        # Tests for retrieving single cats by ID.
+└──     └── 📜 GetCatsPaginatedTests.cs  # Tests for cat pagination and filtering.
+
 
 ```
 ## 🌟 Recommended IDE Configuration and Tools (optional but recommended):
