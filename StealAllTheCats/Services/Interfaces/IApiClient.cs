@@ -1,8 +1,8 @@
 ﻿using StealAllTheCats.Models.Responses;
 
-namespace StealAllTheCats.Services
+namespace StealAllTheCats.Services.Interfaces
 {
-    public interface ICatApiClient
+    public interface IApiClient
     {
         public Task<List<CatApiResponse>> GetCatsAsync(int limit);
 

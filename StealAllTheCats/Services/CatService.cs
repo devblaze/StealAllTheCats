@@ -3,29 +3,29 @@ using StealAllTheCats.Data;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
 using StealAllTheCats.Models.Responses;
+using StealAllTheCats.Services.Interfaces;
 using System.Text.Json;
 
 namespace StealAllTheCats.Services;
 
-public class CatService(ICatApiClient catApiClient, ApplicationDbContext db) : ICatService
+public class CatService(IApiClient apiClient, ApplicationDbContext db) : ICatService
 {
     public async Task<List<CatEntity>> FetchCatsAsync(int limit = 25)
     {
-        var apiResults = await catApiClient.GetCatsAsync(limit);
-
+        var apiResults = await apiClient.GetCatsAsync(limit);
         var cats = new List<CatEntity>();
 
         foreach (var result in apiResults)
         {
-            var imageData = await catApiClient.GetCatImageAsync(result.Url);
+            var imageData = await apiClient.GetCatImageAsync(result.Url);
 
-            var tags = result.Breeds
+            var tags = result.Breeds?
                 .SelectMany(b => (b.Temperament ?? "")
                     .Split(',', StringSplitOptions.RemoveEmptyEntries))
                 .Select(tag => tag.Trim())
                 .Distinct()
                 .Select(t => new TagEntity { Name = t })
-                .ToList();
+                .ToList() ?? new List<TagEntity>();
 
             var cat = new CatEntity
             {
@@ -39,10 +39,13 @@ public class CatService(ICatApiClient catApiClient, ApplicationDbContext db) : I
             cats.Add(cat);
         }
 
+        await db.Cats.AddRangeAsync(cats);
+        await db.SaveChangesAsync();
+
         return cats;
     }
     
-    public async Task<CatPaginatedResponse> GetCatsPaginatedAsync(GetCatsPaginatedRequest request, CancellationToken cancellationToken)
+    public async Task<CatPaginatedResponse> GetCatsPaginatedAsync(GetCatsRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -63,5 +66,11 @@ public class CatService(ICatApiClient catApiClient, ApplicationDbContext db) : I
             .ToListAsync(cancellationToken);
         
         return response;
+    }
+
+    public async Task<CatEntity?> GetCatByIdAsync(GetCatsRequest request, CancellationToken cancellationToken)
+    {
+        CatEntity? cat = await db.Cats.Include(c => c.Tags).FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+        return cat;
     }
 }

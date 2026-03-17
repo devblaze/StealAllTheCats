@@ -1,6 +1,28 @@
 ﻿services:
   stealallthecats:
-    image: stealallthecats
+    container_name: stealallthecats
     build:
       context: .
       dockerfile: StealAllTheCats/Dockerfile
+    image: stealallthecats:latest  # explicitly tag your local built image
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=CatsDb;User Id=sa;Password=YourPasswordHere;TrustServerCertificate=True
+
+  db:
+    container_name: stealallthecats_db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      MSSQL_SA_PASSWORD: "YourPasswordHere"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - catdb-data:/var/opt/mssql
+
+volumes:
+  catdb-data:
