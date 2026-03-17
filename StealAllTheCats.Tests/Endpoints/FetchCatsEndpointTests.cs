@@ -5,8 +5,9 @@ using StealAllTheCats.Data;
 using StealAllTheCats.Endpoints;
 using StealAllTheCats.Models;
 using StealAllTheCats.Services;
+using Xunit;
 
-namespace StealAllCats.Tests.Endpoints;
+namespace StealAllTheCats.Tests.Endpoints;
 
 public class FetchCatsEndpointTests
 {
@@ -19,15 +20,19 @@ public class FetchCatsEndpointTests
 
         await using var context = new ApplicationDbContext(options);
 
-        context.Cats.Add(new CatEntity { CatId = "abc123" });
+        context.Cats.Add(new CatEntity
+        {
+            CatId = "abc123",
+            Image = new byte[] { 0x1, 0x2, 0x3 } // Provide dummy byte data for test
+        });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var mockCatService = new Mock<ICatService>();
         mockCatService.Setup(svc => svc.FetchCatsAsync(25))
             .ReturnsAsync(new List<CatEntity>
             {
-                new() { CatId = "abc123" },
-                new() { CatId = "def456" }
+                new CatEntity { CatId = "abc123", Image = new byte[] { 0x01 } },
+                new CatEntity { CatId = "def456", Image = new byte[] { 0x02 } }
             });
 
         var ep = Factory.Create<FetchCatsEndpoint>(context, mockCatService.Object);

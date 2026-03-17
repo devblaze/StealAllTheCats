@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.Data;
 using StealAllTheCats.Models.Requets;
+using StealAllTheCats.Services;
 
 namespace StealAllTheCats.Endpoints;
 

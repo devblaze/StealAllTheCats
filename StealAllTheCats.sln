@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllCats.Tests", "StealAllCats.Tests\StealAllCats.Tests.csproj", "{D3394F14-9E86-44BD-9E9E-233A0710E447}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCats.Tests", "StealAllTheCats.Tests\StealAllTheCats.Tests.csproj", "{D3394F14-9E86-44BD-9E9E-233A0710E447}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

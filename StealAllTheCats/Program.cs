@@ -13,11 +13,8 @@ builder.Services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddHttpClient<ICatService, CatService>(client =>
-{
-    client.BaseAddress = new Uri("https://api.thecatapi.com/v1/");
-    client.DefaultRequestHeaders.Add("x-api-key", "YOUR_CAT_API_KEY");
-});
+builder.Services.AddHttpClient<ICatApiClient, CatApiClient>();
+builder.Services.AddScoped<ICatService, CatService>();
 
 var app = builder.Build();
 

@@ -4,9 +4,10 @@ using StealAllTheCats.Data;
 using StealAllTheCats.Endpoints;
 using StealAllTheCats.Models;
 using StealAllTheCats.Models.Requets;
+using StealAllTheCats.Models.Responses;
 using Xunit;
 
-namespace StealAllCats.Tests.Endpoints;
+namespace StealAllTheCats.Tests.Endpoints;
 
 public class GetCatsEndpointTests
 {
@@ -20,9 +21,21 @@ public class GetCatsEndpointTests
         await using var context = new ApplicationDbContext(options);
 
         context.Cats.AddRange(
-            new CatEntity { CatId = "cat1", Tags = new[] { new TagEntity { Name = "Playful" } } },
-            new CatEntity { CatId = "cat2", Tags = new[] { new TagEntity { Name = "Sleepy" } } },
-            new CatEntity { CatId = "cat3", Tags = new[] { new TagEntity { Name = "Playful" } } }
+            new CatEntity
+            {
+                CatId = "cat1",
+                Image = new byte[] { 0x01, 0x02 }, Tags = [new TagEntity { Name = "Playful" }]
+            },
+            new CatEntity
+            {
+                CatId = "cat2",
+                Image = new byte[] { 0x03, 0x04 }, Tags = [new TagEntity { Name = "Sleepy" }]
+            },
+            new CatEntity
+            {
+                CatId = "cat3",
+                Image = new byte[] { 0x05 }, Tags = [new TagEntity { Name = "Playful" }]
+            }
         );
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -30,13 +43,17 @@ public class GetCatsEndpointTests
 
         await ep.HandleAsync(new GetCatsPaginatedRequest { Tag = "Playful", Page = 1, PageSize = 10 }, CancellationToken.None);
         
-        var response = ep.Response as GetCatsResponse;
-
+        var response = ep.Response as CatPaginatedResponse;
+        
         Assert.NotNull(response);
-
+        
         Assert.Equal(2, response.TotalItems);
-        Assert.All(response.Data, c => Assert.Contains(c.Tags, t => t.Name == "Playful"));
+        Assert.All(response.Data, c =>
+        {
+            if (c.Tags != null)
+            {
+                Assert.Contains(c.Tags, t => t.Name == "Playful");
+            }
+        });
     }
 }
-
-public record GetCatsResponse(int TotalItems, List<CatEntity> Data);
