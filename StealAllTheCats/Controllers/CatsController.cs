@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StealAllTheCats.Dtos.Requets;
-using StealAllTheCats.Services;
 using StealAllTheCats.Services.Interfaces;
 
 namespace StealAllTheCats.Controllers;

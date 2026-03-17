@@ -1,6 +1,7 @@
-﻿using StealAllTheCats.Models;
+﻿using StealAllTheCats.Dtos.Results;
+using StealAllTheCats.Models;
 
-namespace StealAllTheCats.Dtos.Mapper;
+namespace StealAllTheCats.Dtos.Mappers;
 
 public static class CatMapper
 {
