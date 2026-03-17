@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace StealAllTheCats.Migrations
+namespace StealAllTheCats.Database.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -20,7 +20,7 @@ namespace StealAllTheCats.Migrations
                     CatId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Width = table.Column<int>(type: "int", nullable: false),
                     Height = table.Column<int>(type: "int", nullable: false),
-                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

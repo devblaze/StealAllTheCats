@@ -3,7 +3,6 @@ using Moq;
 using StealAllTheCats.Controllers;
 using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Results;
-using StealAllTheCats.Models;
 using StealAllTheCats.Services.Interfaces;
 using Xunit;
 

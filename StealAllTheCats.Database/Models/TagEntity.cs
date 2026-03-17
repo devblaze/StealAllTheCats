@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace StealAllTheCats.Models;
+namespace StealAllTheCats.Database.Models;
 
 public class TagEntity
 {

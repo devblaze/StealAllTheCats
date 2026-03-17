@@ -35,7 +35,7 @@ public class ApiClient : IApiClient
         }
         catch (Exception ex)
         {
-            return Result<T>.Fail("Error occurred during request.", ex);
+            return Result<T>.Fail("Error occurred during request.", 500, ex);
         }
     }
 }

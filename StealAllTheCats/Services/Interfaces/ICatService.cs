@@ -1,7 +1,6 @@
 ﻿using StealAllTheCats.Dtos;
 using StealAllTheCats.Dtos.Requets;
 using StealAllTheCats.Dtos.Results;
-using StealAllTheCats.Models;
 
 namespace StealAllTheCats.Services.Interfaces;
 

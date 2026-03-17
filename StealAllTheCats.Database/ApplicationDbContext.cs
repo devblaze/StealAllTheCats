@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StealAllTheCats.Models;
+using StealAllTheCats.Database.Models;
 
-namespace StealAllTheCats.Data;
+namespace StealAllTheCats.Database;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
