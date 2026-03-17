@@ -1,0 +1,6 @@
+﻿services:
+  stealallthecats:
+    image: stealallthecats
+    build:
+      context: .
+      dockerfile: StealAllTheCats/Dockerfile
