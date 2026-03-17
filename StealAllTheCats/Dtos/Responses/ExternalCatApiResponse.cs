@@ -1,4 +1,4 @@
-﻿namespace StealAllTheCats.Models.Responses;
+﻿namespace StealAllTheCats.Dtos.Responses;
 
 public class ExternalCatApiResponse
 {
