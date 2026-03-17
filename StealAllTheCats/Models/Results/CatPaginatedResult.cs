@@ -1,6 +1,6 @@
-﻿namespace StealAllTheCats.Models.Responses;
+﻿namespace StealAllTheCats.Models.Results;
 
-public class CatPaginatedResponse
+public class CatPaginatedResult
 {
     public int TotalItems { get; set; }
     public List<CatEntity>? Data { get; set; }

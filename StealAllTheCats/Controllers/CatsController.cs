@@ -16,9 +16,9 @@ public class CatsController(ICatService catService) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCat([FromQuery] GetCatsRequest request, CancellationToken ct)
+    public async Task<IActionResult> GetCat(int id, CancellationToken ct)
     {
-        var result = await catService.GetCatByIdAsync(request, ct);
+        var result = await catService.GetCatByIdAsync(id, ct);
 
         if (result is null) return NotFound();
 
@@ -35,7 +35,7 @@ public class CatsController(ICatService catService) : ControllerBase
     [HttpGet("{id}/image")]
     public async Task<IActionResult> GetCatImage(int id, CancellationToken ct)
     {
-        var cat = await catService.GetCatByIdAsync(new GetCatsRequest { Id = id }, ct);
+        var cat = await catService.GetCatByIdAsync(id, ct);
 
         if (cat == null || cat.Image == null || cat.Image.Length == 0)
             return NotFound("No image found.");

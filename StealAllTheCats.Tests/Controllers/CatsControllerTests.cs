@@ -23,11 +23,11 @@ public class CatsControllerTests
     public async Task GetCat_ShouldReturnNotFound_WhenCatDoesNotExist()
     {
         // Arrange
-        _serviceMock.Setup(svc => svc.GetCatByIdAsync(It.IsAny<GetCatsRequest>(), It.IsAny<CancellationToken>()))
+        _serviceMock.Setup(svc => svc.GetCatByIdAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((CatEntity)null);
 
         // Act
-        var result = await _controller.GetCat(new GetCatsRequest { Id = 99 }, CancellationToken.None);
+        var result = await _controller.GetCat(99, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
@@ -38,11 +38,11 @@ public class CatsControllerTests
     {
         // Arrange
         var mockedCat = new CatEntity() { Id = 1, CatId = "cat-123", Width = 200, Height = 200 };
-        _serviceMock.Setup(svc => svc.GetCatByIdAsync(It.IsAny<GetCatsRequest>(), CancellationToken.None))
+        _serviceMock.Setup(svc => svc.GetCatByIdAsync(1, CancellationToken.None))
             .ReturnsAsync(mockedCat);
 
         // Act
-        var result = await _controller.GetCat(new GetCatsRequest { Id = 1 }, CancellationToken.None);
+        var result = await _controller.GetCat(1, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
