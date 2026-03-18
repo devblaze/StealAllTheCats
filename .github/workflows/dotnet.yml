@@ -1,4 +1,4 @@
-name: .NET CI/CD
+name: .NET CI
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   build-and-test:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -22,25 +21,24 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build application
-        run: dotnet build --no-restore
+      - name: Build
+        run: dotnet build --no-restore -c Release
 
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build -c Release --verbosity normal --collect:"XPlat Code Coverage"
 
-      # Add a step to publish for self-contained deployment RECOMMENDED clearly 
-      - name: Publish (self-contained executable)
+      - name: Publish
         run: dotnet publish -c Release -o ./publish --self-contained false
 
-      - name: Verify application startup without Docker
+      - name: Verify application starts
         run: |
           dotnet ./publish/StealAllTheCats.dll &
           APP_PID=$!
-          sleep 10
+          sleep 8
           if ps -p $APP_PID > /dev/null; then
-            echo "Application runs successfully without Docker ✅"
+            echo "Application started successfully"
             kill $APP_PID
           else
-            echo "Failed to start application without Docker ❌"
+            echo "Application failed to start"
             exit 1
           fi

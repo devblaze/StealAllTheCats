@@ -1,4 +1,4 @@
-name: Docker Image CI/CD
+name: Docker Compose CI
 
 on:
   push:
@@ -7,32 +7,80 @@ on:
     branches: ["main"]
 
 jobs:
-  build-test-docker:
-
+  docker-compose-test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      # Build Docker image explicitly
-      - name: Build Docker image
-        run: docker build -t steal-all-the-cats:${{ github.sha }} -f StealAllTheCats/Dockerfile .
+      - name: Build and start services
+        run: docker compose up -d --build
 
-      # Run Docker container explicitly
-      - name: Start container explicitly to verify startup
-        run: docker run -d --name catapp_test -p 8080:8080 steal-all-the-cats:${{ github.sha }}
-
-      # Verify explicitly if Docker app starts clearly (adjust port if needed)
-      - name: Wait and verify container availability
+      - name: Wait for SQL Server health check
         run: |
-          sleep 10
-          if [ "$(docker ps -q -f name=catapp_test)" ]; then
-            echo "Container started successfully ✅"
+          echo "Waiting for SQL Server to be healthy..."
+          for i in $(seq 1 30); do
+            if docker inspect --format='{{.State.Health.Status}}' stealallthecats_db 2>/dev/null | grep -q healthy; then
+              echo "SQL Server is healthy"
+              break
+            fi
+            echo "Attempt $i/30 - waiting 5s..."
+            sleep 5
+          done
+
+      - name: Wait for application startup
+        run: |
+          echo "Waiting for the application to respond..."
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8080/swagger/index.html > /dev/null 2>&1; then
+              echo "Application is up"
+              break
+            fi
+            echo "Attempt $i/20 - waiting 3s..."
+            sleep 3
+          done
+
+      - name: Verify Swagger is reachable
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8080/swagger/index.html)
+          if [ "$STATUS" -eq 200 ]; then
+            echo "Swagger UI is accessible (HTTP $STATUS)"
           else
-            echo "Container failed to start ❌"
-            docker logs catapp_test
+            echo "Swagger UI returned HTTP $STATUS"
             exit 1
           fi
-          
-      - name: Stop Docker container explicitly
-        run: docker stop catapp_test && docker rm catapp_test
+
+      - name: Verify GET /api/cats returns 200
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8080/api/cats)
+          echo "GET /api/cats returned HTTP $STATUS"
+          [ "$STATUS" -eq 200 ] || exit 1
+
+      - name: Verify POST /api/cat-imports returns 202
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST http://localhost:8080/api/cat-imports)
+          echo "POST /api/cat-imports returned HTTP $STATUS"
+          [ "$STATUS" -eq 202 ] || exit 1
+
+      - name: Verify GET /api/cat-imports/{id} returns job status
+        run: |
+          RESPONSE=$(curl -s -X POST http://localhost:8080/api/cat-imports)
+          JOB_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          echo "Created import job $JOB_ID"
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8080/api/cat-imports/$JOB_ID)
+          echo "GET /api/cat-imports/$JOB_ID returned HTTP $STATUS"
+          [ "$STATUS" -eq 200 ] || exit 1
+
+      - name: Verify Blazor UI is reachable
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8080/ui)
+          echo "GET /ui returned HTTP $STATUS"
+          [ "$STATUS" -eq 200 ] || exit 1
+
+      - name: Print application logs on failure
+        if: failure()
+        run: docker compose logs stealallthecats
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
