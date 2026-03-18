@@ -13,7 +13,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Server=db;Database=CatsDb;User Id=sa;Password=YourPasswordHere;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=db;Database=CatsDb;User Id=sa;Password=Dev@12345;TrustServerCertificate=True
 
   db:
     container_name: stealallthecats_db
@@ -21,12 +21,12 @@ services:
     ports:
       - "1433:1433"
     environment:
-      MSSQL_SA_PASSWORD: "YourPasswordHere"
+      MSSQL_SA_PASSWORD: "Dev@12345"
       ACCEPT_EULA: "Y"
     volumes:
       - catdb-data:/var/opt/mssql
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "YourPasswordHere" -C -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Dev@12345" -C -Q "SELECT 1" || exit 1
       interval: 5s
       timeout: 3s
       retries: 10

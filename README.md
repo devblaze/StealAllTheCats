@@ -1,5 +1,8 @@
 # Cat Collector
 
+[![.NET Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/dotnet.yml/badge.svg)](https://github.com/devblaze/StealAllTheCats/actions/workflows/dotnet.yml)
+[![Docker Build](https://github.com/devblaze/StealAllTheCats/actions/workflows/docker-image.yml/badge.svg)](https://github.com/devblaze/StealAllTheCats/actions/workflows/docker-image.yml)
+
 ASP.NET Core Web API that imports cat images from [TheCatAPI](https://thecatapi.com/), stores them locally, and exposes endpoints for retrieval and filtering. Includes a lightweight Blazor UI.
 
 ## Prerequisites
